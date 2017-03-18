@@ -521,19 +521,6 @@ void program_rom_setup() {
   rtui_print("  Press SELECT  ");
 }
 
-unsigned int program_rom_read(unsigned long * time) {
-  signed int b = Serial.read();
-  if (b < 0) {
-    *time = millis();
-    rtui_set_cursor(0, 1);
-    rtui_print_addr(addr);
-    while (b < 0) {
-      b = Serial.read();
-    }
-  }
-  return b;
-}
-
 void program_rom_loop() {
   unsigned char buttons = rtui_get_buttons();
   if (buttons & RTUI_SELECT) {
