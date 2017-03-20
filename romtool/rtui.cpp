@@ -212,3 +212,7 @@ unsigned char rtui_get_buttons() {
 char * rtui_get_hex(unsigned char d) {
   return rtui_hex[d];
 }
+
+char * rtui_get_chr(unsigned char d) {
+  return rtui_chr[d];
+}

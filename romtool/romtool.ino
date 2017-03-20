@@ -6,11 +6,14 @@
 #include "rtio.h"
 #include "rtui.h"
 
-#define NUM_PGM     14
-#define KEY_DELAY  500
-#define REF_DELAY  100
+#define NUM_PGM         14
+#define SER_BUF_SIZE  1024
+#define KEY_DELAY      500
+#define REF_DELAY      100
 
 int cur_pgm = 0;
+char ser_buf[SER_BUF_SIZE];
+int ser_buf_pos = 0;
 
 int data_width = RTUI_DATA_WIDTH_8;
 int addr_width = RTUI_ADDR_WIDTH_16;
@@ -20,6 +23,7 @@ int active = false;
 int addr_inc;
 unsigned long addr;
 unsigned long addr_max;
+unsigned long intel_hex_origin = 0;
 
 int eeprom_page = 0;
 int eeprom_pages = 16;
@@ -69,6 +73,17 @@ void pgm_next() {
 }
 
 void loop() {
+  if (!active && Serial.available() > 0) {
+    char b = Serial.read();
+    if (b == 0x0A || b == 0x0D) {
+      ser_buf[ser_buf_pos] = 0;
+      serial_command();
+      ser_buf_pos = 0;
+    } else if (b && ser_buf_pos < (SER_BUF_SIZE - 1)) {
+      ser_buf[ser_buf_pos] = b;
+      ser_buf_pos++;
+    }
+  }
   switch (cur_pgm) {
     case  0: hello_loop(); break;
     case  1: data_width_loop(); break;
@@ -464,38 +479,42 @@ void dump_rom_setup() {
   rtui_print("  Press SELECT  ");
 }
 
+void dump_rom() {
+  unsigned long time = 0;
+  unsigned int data;
+  addr = 0;
+  addr_max = rtui_get_addr_width(addr_width);
+  rtui_clear();
+  rtui_print("Dumping ROM\x08");
+  rtio_read_mode();
+  while (addr < addr_max) {
+    if ((millis() - time) >= REF_DELAY) {
+      time = millis();
+      rtui_set_cursor(0, 1);
+      rtui_print_addr(addr);
+    }
+    rtio_set_addr(addr);
+    rtio_enable();
+    data = rtio_read_data();
+    rtio_disable();
+    if (hex_format) {
+      if (data_width == RTUI_DATA_WIDTH_16_BE) Serial.write(rtui_get_hex(data >> 8));
+      Serial.write(rtui_get_hex(data));
+      if (data_width == RTUI_DATA_WIDTH_16_LE) Serial.write(rtui_get_hex(data >> 8));
+    } else {
+      if (data_width == RTUI_DATA_WIDTH_16_BE) Serial.write(data >> 8);
+      Serial.write(data);
+      if (data_width == RTUI_DATA_WIDTH_16_LE) Serial.write(data >> 8);
+    }
+    addr++;
+  }
+  rtio_deactivate();
+}
+
 void dump_rom_loop() {
   unsigned char buttons = rtui_get_buttons();
   if (buttons & RTUI_SELECT) {
-    unsigned long time = 0;
-    unsigned int data;
-    addr = 0;
-    addr_max = rtui_get_addr_width(addr_width);
-    rtui_clear();
-    rtui_print("Dumping ROM\x08");
-    rtio_read_mode();
-    while (addr < addr_max) {
-      if ((millis() - time) >= REF_DELAY) {
-        time = millis();
-        rtui_set_cursor(0, 1);
-        rtui_print_addr(addr);
-      }
-      rtio_set_addr(addr);
-      rtio_enable();
-      data = rtio_read_data();
-      rtio_disable();
-      if (hex_format) {
-        if (data_width == RTUI_DATA_WIDTH_16_BE) Serial.write(rtui_get_hex(data >> 8));
-        Serial.write(rtui_get_hex(data));
-        if (data_width == RTUI_DATA_WIDTH_16_LE) Serial.write(rtui_get_hex(data >> 8));
-      } else {
-        if (data_width == RTUI_DATA_WIDTH_16_BE) Serial.write(data >> 8);
-        Serial.write(data);
-        if (data_width == RTUI_DATA_WIDTH_16_LE) Serial.write(data >> 8);
-      }
-      addr++;
-    }
-    rtio_deactivate();
+    dump_rom();
     dump_rom_setup();
     while (rtui_get_buttons());
     return;
@@ -521,84 +540,88 @@ void program_rom_setup() {
   rtui_print("  Press SELECT  ");
 }
 
+void program_rom() {
+  unsigned long time = 0;
+  unsigned int data = 0;
+  int subaddr = 0;
+  int b;
+  addr = 0;
+  addr_max = rtui_get_addr_width(addr_width);
+  rtui_clear();
+  rtui_print("Programming ROM\x08");
+  rtio_write_mode();
+  while (addr < addr_max) {
+    while (subaddr < 4) {
+      if ((millis() - time) >= REF_DELAY) {
+        time = millis();
+        rtui_set_cursor(0, 1);
+        rtui_print_addr(addr);
+      }
+      b = Serial.read();
+      if (hex_format) {
+        if (b >= '0' && b <= '9') b = b - '0';
+        else if (b >= 'A' && b <= 'F') b = b - 'A' + 10;
+        else if (b >= 'a' && b <= 'f') b = b - 'a' + 10;
+        else continue;
+        switch (data_width) {
+          case RTUI_DATA_WIDTH_8:
+            if (subaddr) data |= b;
+            else data = (b << 4);
+            subaddr += 2;
+            break;
+          case RTUI_DATA_WIDTH_16_LE:
+            switch (subaddr) {
+              case 0: data  = (b <<  4); break;
+              case 1: data |= (b <<  0); break;
+              case 2: data |= (b << 12); break;
+              case 3: data |= (b <<  8); break;
+            }
+            subaddr++;
+            break;
+          case RTUI_DATA_WIDTH_16_BE:
+            switch (subaddr) {
+              case 0: data  = (b << 12); break;
+              case 1: data |= (b <<  8); break;
+              case 2: data |= (b <<  4); break;
+              case 3: data |= (b <<  0); break;
+            }
+            subaddr++;
+            break;
+        }
+      } else if (b >= 0) {
+        switch (data_width) {
+          case RTUI_DATA_WIDTH_8:
+            data = b;
+            subaddr += 4;
+            break;
+          case RTUI_DATA_WIDTH_16_LE:
+            if (subaddr) data |= (b << 8);
+            else data = b;
+            subaddr += 2;
+            break;
+          case RTUI_DATA_WIDTH_16_BE:
+            if (subaddr) data |= b;
+            else data = (b << 8);
+            subaddr += 2;
+            break;
+        }
+      }
+    }
+    rtio_set_addr(addr);
+    rtio_set_data(data);
+    rtio_enable();
+    rtio_disable();
+    data = 0;
+    subaddr = 0;
+    addr++;
+  }
+  rtio_deactivate();
+}
+
 void program_rom_loop() {
   unsigned char buttons = rtui_get_buttons();
   if (buttons & RTUI_SELECT) {
-    unsigned long time = 0;
-    unsigned int data = 0;
-    int subaddr = 0;
-    int b;
-    addr = 0;
-    addr_max = rtui_get_addr_width(addr_width);
-    rtui_clear();
-    rtui_print("Programming ROM\x08");
-    rtio_write_mode();
-    while (addr < addr_max) {
-      while (subaddr < 4) {
-        if ((millis() - time) >= REF_DELAY) {
-          time = millis();
-          rtui_set_cursor(0, 1);
-          rtui_print_addr(addr);
-        }
-        b = Serial.read();
-        if (hex_format) {
-          if (b >= '0' && b <= '9') b = b - '0';
-          else if (b >= 'A' && b <= 'F') b = b - 'A' + 10;
-          else if (b >= 'a' && b <= 'f') b = b - 'a' + 10;
-          else continue;
-          switch (data_width) {
-            case RTUI_DATA_WIDTH_8:
-              if (subaddr) data |= b;
-              else data = (b << 4);
-              subaddr += 2;
-              break;
-            case RTUI_DATA_WIDTH_16_LE:
-              switch (subaddr) {
-                case 0: data  = (b <<  4); break;
-                case 1: data |= (b <<  0); break;
-                case 2: data |= (b << 12); break;
-                case 3: data |= (b <<  8); break;
-              }
-              subaddr++;
-              break;
-            case RTUI_DATA_WIDTH_16_BE:
-              switch (subaddr) {
-                case 0: data  = (b << 12); break;
-                case 1: data |= (b <<  8); break;
-                case 2: data |= (b <<  4); break;
-                case 3: data |= (b <<  0); break;
-              }
-              subaddr++;
-              break;
-          }
-        } else if (b >= 0) {
-          switch (data_width) {
-            case RTUI_DATA_WIDTH_8:
-              data = b;
-              subaddr += 4;
-              break;
-            case RTUI_DATA_WIDTH_16_LE:
-              if (subaddr) data |= (b << 8);
-              else data = b;
-              subaddr += 2;
-              break;
-            case RTUI_DATA_WIDTH_16_BE:
-              if (subaddr) data |= b;
-              else data = (b << 8);
-              subaddr += 2;
-              break;
-          }
-        }
-      }
-      rtio_set_addr(addr);
-      rtio_set_data(data);
-      rtio_enable();
-      rtio_disable();
-      data = 0;
-      subaddr = 0;
-      addr++;
-    }
-    rtio_deactivate();
+    program_rom();
     program_rom_setup();
     while (rtui_get_buttons());
     return;
@@ -627,16 +650,20 @@ void save_settings_setup() {
   rtui_print(" Press SELECT");
 }
 
+void save_settings() {
+  int ea = eeprom_page << 4;
+  EEPROM.write(ea++, 0xB1);
+  EEPROM.write(ea++, 0x27);
+  EEPROM.write(ea++, data_width);
+  EEPROM.write(ea++, addr_width);
+  EEPROM.write(ea++, hex_format);
+  EEPROM.write(ea++, rtui_get_backlight());
+}
+
 void save_settings_loop() {
   unsigned char buttons = rtui_get_buttons();
   if (buttons & RTUI_SELECT) {
-    int ea = eeprom_page << 4;
-    EEPROM.write(ea++, 0xB1);
-    EEPROM.write(ea++, 0x27);
-    EEPROM.write(ea++, data_width);
-    EEPROM.write(ea++, addr_width);
-    EEPROM.write(ea++, hex_format);
-    EEPROM.write(ea++, rtui_get_backlight());
+    save_settings();
     rtui_set_cursor(4, 1);
     rtui_print("\x02\x02 Saved! \x02\x02");
     while (rtui_get_buttons());
@@ -684,9 +711,7 @@ void load_settings_setup() {
   rtui_print(" Press SELECT");
 }
 
-void load_settings_loop() {
-  unsigned char buttons = rtui_get_buttons();
-  if (buttons & RTUI_SELECT) {
+int load_settings() {
     int ea = eeprom_page << 4;
     unsigned char m1 = EEPROM.read(ea++);
     unsigned char m2 = EEPROM.read(ea++);
@@ -695,6 +720,16 @@ void load_settings_loop() {
       addr_width = EEPROM.read(ea++);
       hex_format = EEPROM.read(ea++);
       rtui_set_backlight(EEPROM.read(ea++));
+      return true;
+    } else {
+      return false;
+    }
+}
+
+void load_settings_loop() {
+  unsigned char buttons = rtui_get_buttons();
+  if (buttons & RTUI_SELECT) {
+    if (load_settings()) {
       rtui_set_cursor(4, 1);
       rtui_print("\x02\x02 Loaded \x02\x02");
     } else {
@@ -942,5 +977,586 @@ void party_mode_loop() {
     pgm_next();
     while (rtui_get_buttons());
     return;
+  }
+}
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+int free_ram() {
+  extern int __heap_start, * __brkval; int v;
+  return (int)&v - ((__brkval == 0) ? (int)&__heap_start : (int)__brkval);
+}
+
+int digit(char ch) {
+  if (ch >= '0' && ch <= '9') return ch - '0';
+  else if (ch >= 'A' && ch <= 'Z') return ch - 'A' + 10;
+  else if (ch >= 'a' && ch <= 'z') return ch - 'a' + 10;
+  return -1;
+}
+
+void serial_dump_rom(unsigned long i, unsigned long j) {
+  int ds, de;
+  unsigned int data[16];
+  rtio_read_mode();
+  for (addr = i; addr <= j; addr++) {
+    if (addr == i || (addr & 0xF) == 0) {
+      ds = (addr & 0xF);
+      Serial.print(rtui_get_hex(addr >> 24));
+      Serial.print(rtui_get_hex(addr >> 16));
+      Serial.print(rtui_get_hex(addr >>  8));
+      Serial.print(rtui_get_hex(addr));
+      Serial.print(":");
+    }
+    de = (addr & 0xF);
+    rtio_set_addr(addr);
+    rtio_enable();
+    data[de] = rtio_read_data();
+    rtio_disable();
+    Serial.print(" ");
+    if (data_width) Serial.print(rtui_get_hex(data[de] >> 8));
+    Serial.print(rtui_get_hex(data[de]));
+    if (addr == j || (addr & 0xF) == 0xF) {
+      Serial.print("  ");
+      while (ds <= de) {
+        if (data_width == RTUI_DATA_WIDTH_16_BE) Serial.print(rtui_get_chr(data[ds] >> 8));
+        Serial.print(rtui_get_chr(data[ds]));
+        if (data_width == RTUI_DATA_WIDTH_16_LE) Serial.print(rtui_get_chr(data[ds] >> 8));
+        ds++;
+      }
+      Serial.println();
+    }
+  }
+  rtio_deactivate();
+}
+
+void serial_program_rom(unsigned long origin, char * buf, int count) {
+  unsigned int data = 0;
+  int subaddr = 0;
+  int written = 0;
+  addr = origin;
+  rtio_write_mode();
+  while ((*buf) && (count > 0)) {
+    while ((*buf) && (subaddr < 4)) {
+      int b = *buf++;
+      if (b >= '0' && b <= '9') b = b - '0';
+      else if (b >= 'A' && b <= 'F') b = b - 'A' + 10;
+      else if (b >= 'a' && b <= 'f') b = b - 'a' + 10;
+      else continue;
+      switch (data_width) {
+        case RTUI_DATA_WIDTH_8:
+          if (subaddr) data |= b;
+          else data = (b << 4);
+          subaddr += 2;
+          break;
+        case RTUI_DATA_WIDTH_16_LE:
+          switch (subaddr) {
+            case 0: data  = (b <<  4); break;
+            case 1: data |= (b <<  0); break;
+            case 2: data |= (b << 12); break;
+            case 3: data |= (b <<  8); break;
+          }
+          subaddr++;
+          break;
+        case RTUI_DATA_WIDTH_16_BE:
+          switch (subaddr) {
+            case 0: data  = (b << 12); break;
+            case 1: data |= (b <<  8); break;
+            case 2: data |= (b <<  4); break;
+            case 3: data |= (b <<  0); break;
+          }
+          subaddr++;
+          break;
+      }
+    }
+    rtio_set_addr(addr);
+    rtio_set_data(data);
+    rtio_enable();
+    rtio_disable();
+    data = 0;
+    subaddr = 0;
+    written += (data_width ? 2 : 1);
+    count -= (data_width ? 2 : 1);
+    addr++;
+  }
+  rtio_deactivate();
+  Serial.print("Wrote ");
+  Serial.print(written);
+  Serial.println(" bytes");
+}
+
+void serial_command() {
+  int d, i = 0;
+  while (ser_buf[i] > 0 && ser_buf[i] < 33) i++;
+  char cmd = ser_buf[i++];
+  switch (cmd) {
+    case '!':
+      Serial.println(&ser_buf[i]);
+      break;
+    case 'b':
+      while (ser_buf[i] > 0 && ser_buf[i] < 33) i++;
+      d = digit(ser_buf[i]);
+      if (d >= 0 && d < 10) {
+        int p = d; i++;
+        d = digit(ser_buf[i]);
+        while (d >= 0 && d < 10) {
+          p = p * 10 + d; i++;
+          d = digit(ser_buf[i]);
+        }
+        if (p >= 0 && p < RTUI_COLORS) {
+          rtui_set_backlight(p);
+          Serial.println("OK");
+          break;
+        }
+      }
+      Serial.println(rtui_get_backlight());
+      break;
+    case 'd':
+      while (ser_buf[i] > 0 && ser_buf[i] < 33) i++;
+      if (ser_buf[i] == '8') {
+        data_width = RTUI_DATA_WIDTH_8;
+        Serial.println("OK");
+        break;
+      }
+      if (ser_buf[i] == '1') {
+        i++;
+        if (ser_buf[i] == '6') {
+          i++;
+          while (ser_buf[i] > 0 && ser_buf[i] < 33) i++;
+          if (ser_buf[i] == 'L' || ser_buf[i] == 'l') {
+            data_width = RTUI_DATA_WIDTH_16_LE;
+            Serial.println("OK");
+            break;
+          }
+          if (ser_buf[i] == 'B' || ser_buf[i] == 'b') {
+            data_width = RTUI_DATA_WIDTH_16_BE;
+            Serial.println("OK");
+            break;
+          }
+        }
+      }
+      switch (data_width) {
+        case RTUI_DATA_WIDTH_8: Serial.println("8"); break;
+        case RTUI_DATA_WIDTH_16_LE: Serial.println("16 LE"); break;
+        case RTUI_DATA_WIDTH_16_BE: Serial.println("16 BE"); break;
+      }
+      break;
+    case 'a':
+      while (ser_buf[i] > 0 && ser_buf[i] < 33) i++;
+      d = digit(ser_buf[i]);
+      if (d >= 0 && d < 10) {
+        int p = d; i++;
+        d = digit(ser_buf[i]);
+        while (d >= 0 && d < 10) {
+          p = p * 10 + d; i++;
+          d = digit(ser_buf[i]);
+        }
+        p = (p - 8) << 1;
+        if (ser_buf[i] == '.' || ser_buf[i] == '+') p++;
+        else if (ser_buf[i] == '-') p--;
+        if (p >= 0 && p < RTUI_ADDR_WIDTHS) {
+          addr_width = p;
+          Serial.println("OK");
+          break;
+        }
+      }
+      if (addr_width & 1) {
+        Serial.print((addr_width >> 1) + 8);
+        Serial.println(".5");
+      } else {
+        Serial.println((addr_width >> 1) + 8);
+      }
+      break;
+    case 'f':
+      while (ser_buf[i] > 0 && ser_buf[i] < 33) i++;
+      if (ser_buf[i] == 'B' || ser_buf[i] == 'b' || ser_buf[i] == 'R' || ser_buf[i] == 'r') {
+        hex_format = false;
+        Serial.println("OK");
+        break;
+      }
+      if (ser_buf[i] == 'H' || ser_buf[i] == 'h') {
+        hex_format = true;
+        Serial.println("OK");
+        break;
+      }
+      Serial.println(hex_format ? "Hex" : "Raw");
+      break;
+    case 'i':
+      while (ser_buf[i] > 0 && ser_buf[i] < 33) i++;
+      d = digit(ser_buf[i]);
+      if (d >= 0 && d < 16) {
+        unsigned long st = d; i++;
+        d = digit(ser_buf[i]);
+        while (d >= 0 && d < 16) {
+          st = (st << 4) | d; i++;
+          d = digit(ser_buf[i]);
+        }
+        while (ser_buf[i] > 0 && ser_buf[i] < 33) i++;
+        d = digit(ser_buf[i]);
+        if (d >= 0 && d < 16) {
+          unsigned long en = d; i++;
+          d = digit(ser_buf[i]);
+          while (d >= 0 && d < 16) {
+            en = (en << 4) | d; i++;
+            d = digit(ser_buf[i]);
+          }
+          serial_dump_rom(st, en);
+          break;
+        }
+        serial_dump_rom(st, st);
+        break;
+      }
+      break;
+    case 'w':
+      while (ser_buf[i] > 0 && ser_buf[i] < 33) i++;
+      d = digit(ser_buf[i]);
+      if (d >= 0 && d < 16) {
+        unsigned long st = d; i++;
+        d = digit(ser_buf[i]);
+        while (d >= 0 && d < 16) {
+          st = (st << 4) | d; i++;
+          d = digit(ser_buf[i]);
+        }
+        serial_program_rom(st, &ser_buf[i], ser_buf_pos - i);
+        break;
+      }
+      break;
+    case 'M':
+      addr_max = rtui_get_addr_width(addr_width);
+      Serial.println(addr_max, HEX);
+      break;
+    case 'D':
+      dump_rom();
+      pgm_setup();
+      Serial.println();
+      Serial.println("OK");
+      break;
+    case 'P':
+      program_rom();
+      pgm_setup();
+      Serial.println("OK");
+      break;
+    case 's':
+      while (ser_buf[i] > 0 && ser_buf[i] < 33) i++;
+      d = digit(ser_buf[i]);
+      if (d >= 0 && d < eeprom_pages) {
+        eeprom_page = d;
+        save_settings();
+        Serial.println("OK");
+      }
+      break;
+    case 'r':
+      while (ser_buf[i] > 0 && ser_buf[i] < 33) i++;
+      d = digit(ser_buf[i]);
+      if (d >= 0 && d < eeprom_pages) {
+        eeprom_page = d;
+        if (load_settings()) {
+          Serial.println("OK");
+        } else {
+          Serial.println("File Empty");
+        }
+      }
+      break;
+    case 'A':
+      while (ser_buf[i] > 0 && ser_buf[i] < 33) i++;
+      d = digit(ser_buf[i]);
+      if (d >= 0 && d < 16) {
+        unsigned long st = d; i++;
+        d = digit(ser_buf[i]);
+        while (d >= 0 && d < 16) {
+          st = (st << 4) | d; i++;
+          d = digit(ser_buf[i]);
+        }
+        rtio_set_addr(addr = st);
+        for (int i = 31; i >= 0; i--) {
+          Serial.print((addr & (1ul << i)) ? "1" : "0");
+        }
+        Serial.println();
+      }
+      break;
+    case 'Q':
+      d = rtio_read_data();
+      for (int i = 15; i >= 0; i--) {
+        Serial.print((d & (1ul << i)) ? "1" : "0");
+      }
+      Serial.print("  ");
+      Serial.print(rtui_get_hex(d >> 8));
+      Serial.print(rtui_get_hex(d));
+      Serial.print("  ");
+      Serial.print(rtui_get_chr(d >> 8));
+      Serial.print(rtui_get_chr(d));
+      Serial.println();
+      break;
+    case 'c':
+      while (ser_buf[i] > 0 && ser_buf[i] < 33) i++;
+      if (ser_buf[i] == 'S' || ser_buf[i] == 's') {
+        rtui_show_cursor();
+        Serial.println("OK");
+        break;
+      }
+      if (ser_buf[i] == 'H' || ser_buf[i] == 'h') {
+        rtui_hide_cursor();
+        Serial.println("OK");
+        break;
+      }
+      d = digit(ser_buf[i]);
+      if (d >= 0 && d < 10) {
+        int p = d; i++;
+        d = digit(ser_buf[i]);
+        while (d >= 0 && d < 10) {
+          p = p * 10 + d; i++;
+          d = digit(ser_buf[i]);
+        }
+        while (ser_buf[i] > 0 && ser_buf[i] < 33) i++;
+        d = digit(ser_buf[i]);
+        if (d >= 0 && d < 10) {
+          int q = d; i++;
+          d = digit(ser_buf[i]);
+          while (d >= 0 && d < 10) {
+            q = q * 10 + d; i++;
+            d = digit(ser_buf[i]);
+          }
+          rtui_set_cursor(p, q);
+          Serial.println("OK");
+          break;
+        }
+        rtui_set_cursor(0, p);
+        Serial.println("OK");
+        break;
+      }
+      rtui_clear();
+      Serial.println("OK");
+      break;
+    case 'p':
+      rtui_print(&ser_buf[i]);
+      Serial.println("OK");
+      break;
+    case 'm':
+      while (ser_buf[i] > 0 && ser_buf[i] < 33) i++;
+      d = digit(ser_buf[i]);
+      if (d >= 0 && d < 10) {
+        int p = d; i++;
+        d = digit(ser_buf[i]);
+        while (d >= 0 && d < 10) {
+          p = p * 10 + d; i++;
+          d = digit(ser_buf[i]);
+        }
+        if (p >= 0 && p < NUM_PGM) {
+          cur_pgm = p;
+        }
+      }
+      rtui_hide_cursor();
+      pgm_setup();
+      Serial.println("OK");
+      break;
+    case 'v':
+      Serial.println("1");
+      break;
+    case 'z':
+      Serial.println(free_ram());
+      break;
+    case 'S':
+      /* Motorola SREC Format */
+      d = digit(ser_buf[i]);
+      if (d >= 0 && d < 10) {
+        int type = d; i++;
+        d = digit(ser_buf[i]);
+        if (d >= 0 && d < 16) {
+          int count = (d << 4); i++;
+          d = digit(ser_buf[i]);
+          if (d >= 0 && d < 16) {
+            count |= d; i++;
+            unsigned long origin = 0;
+            switch (type) {
+              case 3:
+                d = digit(ser_buf[i++]);
+                if (d < 0 || d >= 16) break;
+                origin = (origin << 4) | d;
+                d = digit(ser_buf[i++]);
+                if (d < 0 || d >= 16) break;
+                origin = (origin << 4) | d;
+                /* fallthrough; */
+              case 2:
+                d = digit(ser_buf[i++]);
+                if (d < 0 || d >= 16) break;
+                origin = (origin << 4) | d;
+                d = digit(ser_buf[i++]);
+                if (d < 0 || d >= 16) break;
+                origin = (origin << 4) | d;
+                /* fallthrough; */
+              case 1:
+                d = digit(ser_buf[i++]);
+                if (d < 0 || d >= 16) break;
+                origin = (origin << 4) | d;
+                d = digit(ser_buf[i++]);
+                if (d < 0 || d >= 16) break;
+                origin = (origin << 4) | d;
+                d = digit(ser_buf[i++]);
+                if (d < 0 || d >= 16) break;
+                origin = (origin << 4) | d;
+                d = digit(ser_buf[i++]);
+                if (d < 0 || d >= 16) break;
+                origin = (origin << 4) | d;
+                serial_program_rom(origin, &ser_buf[i], (count - type) - 2);
+                break;
+              default:
+                Serial.println("OK");
+                break;
+            }
+          }
+        }
+      }
+      break;
+    case ':':
+      /* Intel HEX Format */
+      d = digit(ser_buf[i]);
+      if (d >= 0 && d < 16) {
+        int count = (d << 4); i++;
+        d = digit(ser_buf[i]);
+        if (d >= 0 && d < 16) {
+          count |= d; i++;
+          d = digit(ser_buf[i]);
+          if (d >= 0 && d < 16) {
+            unsigned long offset = (d << 12); i++;
+            d = digit(ser_buf[i]);
+            if (d >= 0 && d < 16) {
+              offset |= (d << 8); i++;
+              d = digit(ser_buf[i]);
+              if (d >= 0 && d < 16) {
+                offset |= (d << 4); i++;
+                d = digit(ser_buf[i]);
+                if (d >= 0 && d < 16) {
+                  offset |= d; i++;
+                  d = digit(ser_buf[i]);
+                  if (d == 0) {
+                    int type = (d << 4); i++;
+                    d = digit(ser_buf[i]);
+                    if (d >= 0 && d <= 5) {
+                      type |= d; i++;
+                      switch (type) {
+                        case 0:
+                          serial_program_rom(intel_hex_origin + offset, &ser_buf[i], count);
+                          break;
+                        case 2:
+                          count <<= 1; offset = 0;
+                          d = digit(ser_buf[i]);
+                          while (count > 0 && d >= 0 && d < 16) {
+                            count--; offset = (offset << 4) | d;
+                            i++; d = digit(ser_buf[i]);
+                          }
+                          intel_hex_origin = offset << 4;
+                          Serial.print("Origin set to ");
+                          Serial.println(intel_hex_origin, HEX);
+                          break;
+                        case 3:
+                          count <<= 1; offset = 0;
+                          d = digit(ser_buf[i]);
+                          while (count > 0 && d >= 0 && d < 16) {
+                            count--; offset = (offset << 4) | d;
+                            i++; d = digit(ser_buf[i]);
+                          }
+                          intel_hex_origin = ((offset >> 16) << 4) + (offset & 0xFFFF);
+                          Serial.print("Origin set to ");
+                          Serial.println(intel_hex_origin, HEX);
+                          break;
+                        case 4:
+                          count <<= 1; offset = 0;
+                          d = digit(ser_buf[i]);
+                          while (count > 0 && d >= 0 && d < 16) {
+                            count--; offset = (offset << 4) | d;
+                            i++; d = digit(ser_buf[i]);
+                          }
+                          intel_hex_origin = offset << 16;
+                          Serial.print("Origin set to ");
+                          Serial.println(intel_hex_origin, HEX);
+                          break;
+                        case 5:
+                          count <<= 1; offset = 0;
+                          d = digit(ser_buf[i]);
+                          while (count > 0 && d >= 0 && d < 16) {
+                            count--; offset = (offset << 4) | d;
+                            i++; d = digit(ser_buf[i]);
+                          }
+                          intel_hex_origin = offset;
+                          Serial.print("Origin set to ");
+                          Serial.println(intel_hex_origin, HEX);
+                          break;
+                        default:
+                          Serial.println("OK");
+                          break;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      break;
+    case '%':
+      /* Tektronix Extended HEX Format */
+      d = digit(ser_buf[i]);
+      if (d >= 0 && d < 16) {
+        int count = (d << 4); i++;
+        d = digit(ser_buf[i]);
+        if (d >= 0 && d < 16) {
+          count |= d; i++;
+          d = digit(ser_buf[i]);
+          if (d == 6 || d == 8) {
+            int type = d; i++;
+            d = digit(ser_buf[i]);
+            if (d >= 0 && d < 16) {
+              int checksum = (d << 4); i++;
+              d = digit(ser_buf[i]);
+              if (d >= 0 && d < 16) {
+                checksum |= d; i++;
+                d = digit(ser_buf[i]);
+                if (d >= 0 && d < 16) {
+                  int addr_length = d; i++;
+                  unsigned long origin = 0;
+                  d = digit(ser_buf[i]);
+                  while (addr_length > 0 && d >= 0 && d < 16) {
+                    addr_length--; origin = (origin << 4) | d;
+                    i++; d = digit(ser_buf[i]);
+                  }
+                  switch (type) {
+                    case 6:
+                      serial_program_rom(origin, &ser_buf[i], count >> 1);
+                      break;
+                    default:
+                      Serial.println("OK");
+                      break;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      break;
+    case '?':
+      Serial.println("Beckie's ROM Tool Serial Interface");
+      Serial.println("![<string>]         Echo string over serial");
+      Serial.println("b[<color>]          Report or set backlight color (0, 1, ..., 7)");
+      Serial.println("d[<width>]          Report or set data width (8, 16 LE, 16 BE)");
+      Serial.println("a[<width>]          Report or set address width (8, 8.5, ..., 31)");
+      Serial.println("f[<format>]         Report or set I/O format for D and P (Raw, Hex)");
+      Serial.println("i<addr>[ <addr>]    Print hex dump of specified range of ROM");
+      Serial.println("w<addr>[ <data>]    Program ROM using plain address and hex data");
+      Serial.println("S<rest-of-record>   Program ROM using Motorola SREC record");
+      Serial.println(":<rest-of-record>   Program ROM using Intel HEX record");
+      Serial.println("%<rest-of-record>   Program ROM using Tektronix extended HEX record");
+      Serial.println("M                   Report maximum address (exclusive) in hex");
+      Serial.println("D                   Start dumping entire ROM over serial");
+      Serial.println("P                   Start programming entire ROM over serial");
+      Serial.println("s<slot>             Save settings to Arduino EEPROM (0, 1, ..., F)");
+      Serial.println("r<slot>             Load settings from Arduino EEPROM (0, 1, ..., F)");
+      Serial.println("A<addr>             Set value on address bus (binary counter)");
+      Serial.println("Q                   Print value on data bus (logic probe)");
+      Serial.println("c, cs, ch           Clear LCD, show cursor, hide cursor");
+      Serial.println("c[<column> ]<row>   Set LCD cursor position");
+      Serial.println("p[<string>]         Print string on LCD");
+      Serial.println("m                   Return to menu display");
+      break;
   }
 }

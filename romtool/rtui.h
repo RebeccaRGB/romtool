@@ -71,5 +71,6 @@ void rtui_print_addr_width(int aw, int dw);
 unsigned long rtui_get_addr_width(int aw);
 unsigned char rtui_get_buttons();
 char * rtui_get_hex(unsigned char d);
+char * rtui_get_chr(unsigned char d);
 
 #endif
