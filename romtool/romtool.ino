@@ -994,6 +994,43 @@ int digit(char ch) {
   return -1;
 }
 
+int log2ish(int v) {
+  switch (v) {
+    case 0x0001: return  0;
+    case 0x0002: return  2;
+    case 0x0003: return  3;
+    case 0x0004: return  4;
+    case 0x0006: return  5;
+    case 0x0008: return  6;
+    case 0x000C: return  7;
+    case 0x0010: return  8;
+    case 0x0018: return  9;
+    case 0x0020: return 10;
+    case 0x0030: return 11;
+    case 0x0040: return 12;
+    case 0x0060: return 13;
+    case 0x0080: return 14;
+    case 0x00C0: return 15;
+    case 0x0100: return 16;
+    case 0x0180: return 17;
+    case 0x0200: return 18;
+    case 0x0300: return 19;
+    case 0x0400: return 20;
+    case 0x0600: return 21;
+    case 0x0800: return 22;
+    case 0x0C00: return 23;
+    case 0x1000: return 24;
+    case 0x1800: return 25;
+    case 0x2000: return 26;
+    case 0x3000: return 27;
+    case 0x4000: return 28;
+    case 0x6000: return 29;
+    case 0x8000: return 30;
+    case 0xC000: return 31;
+    default: return -1;
+  }
+}
+
 void serial_dump_rom(unsigned long i, unsigned long j) {
   int ds, de;
   unsigned int data[16];
@@ -1150,9 +1187,23 @@ void serial_command() {
           p = p * 10 + d; i++;
           d = digit(ser_buf[i]);
         }
-        p = (p - 8) << 1;
-        if (ser_buf[i] == '.' || ser_buf[i] == '+') p++;
-        else if (ser_buf[i] == '-') p--;
+        if (ser_buf[i] == 'B' || ser_buf[i] == 'b') {
+          p = log2ish(p);
+          if (p >= 0) p += (data_width ? -18 : -16);
+        } else if (ser_buf[i] == 'K' || ser_buf[i] == 'k') {
+          p = log2ish(p);
+          if (p >= 0) p += (data_width ? 2 : 4);
+        } else if (ser_buf[i] == 'M' || ser_buf[i] == 'm') {
+          p = log2ish(p);
+          if (p >= 0) p += (data_width ? 22 : 24);
+        } else if (ser_buf[i] == 'G' || ser_buf[i] == 'g') {
+          p = log2ish(p);
+          if (p >= 0) p += (data_width ? 42 : 44);
+        } else {
+          p = (p - 8) << 1;
+          if (ser_buf[i] == '.' || ser_buf[i] == '+') p++;
+          else if (ser_buf[i] == '-') p--;
+        }
         if (p >= 0 && p < RTUI_ADDR_WIDTHS) {
           addr_width = p;
           Serial.println("OK");
