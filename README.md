@@ -67,7 +67,7 @@ you can do so using the miniterm utility that comes with pySerial.
 Make sure to specify `--rtscts`, `--echo`, and `--eol LF`:
 
     $ python -m serial.tools.miniterm --rtscts --echo --eol LF /dev/tty.usbmodemfd121 57600
-    --- Miniterm on /dev/tty.usbmodemfd121 57600,8,N,1 ---
+    --- Miniterm on /dev/tty.usbmodemfd121  57600,8,N,1 ---
     --- Quit: Ctrl+] | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H ---
     ?
     Beckie's ROM Tool Serial Interface
@@ -76,7 +76,7 @@ Make sure to specify `--rtscts`, `--echo`, and `--eol LF`:
     d[<width>]          Report or set data width (8, 16 LE, 16 BE)
     a[<width>]          Report or set address width (8, 8.5, ..., 31)
     f[<format>]         Report or set I/O format for D and P (Raw, Hex)
-    i<addr>[ <addr>]    Print hex dump of specified range of ROM
+    i[<addr>[ <addr>]]  Print hex dump of specified range of ROM
     w<addr>[ <data>]    Program ROM using plain address and hex data
     S<rest-of-record>   Program ROM using Motorola SREC record
     :<rest-of-record>   Program ROM using Intel HEX record
