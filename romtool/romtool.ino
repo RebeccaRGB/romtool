@@ -479,15 +479,13 @@ void dump_rom_setup() {
   rtui_print("  Press SELECT  ");
 }
 
-void dump_rom() {
+void dump_rom(unsigned long i, unsigned long j) {
   unsigned long time = 0;
   unsigned int data;
-  addr = 0;
-  addr_max = rtui_get_addr_width(addr_width);
   rtui_clear();
   rtui_print("Dumping ROM\x08");
   rtio_read_mode();
-  while (addr < addr_max) {
+  for (addr = i; addr <= j; addr++) {
     if ((millis() - time) >= REF_DELAY) {
       time = millis();
       rtui_set_cursor(0, 1);
@@ -506,7 +504,6 @@ void dump_rom() {
       Serial.write(data);
       if (data_width == RTUI_DATA_WIDTH_16_LE) Serial.write(data >> 8);
     }
-    addr++;
   }
   rtio_deactivate();
 }
@@ -514,7 +511,7 @@ void dump_rom() {
 void dump_rom_loop() {
   unsigned char buttons = rtui_get_buttons();
   if (buttons & RTUI_SELECT) {
-    dump_rom();
+    dump_rom(0, rtui_get_addr_width(addr_width) - 1);
     dump_rom_setup();
     while (rtui_get_buttons());
     return;
@@ -540,17 +537,15 @@ void program_rom_setup() {
   rtui_print("  Press SELECT  ");
 }
 
-void program_rom() {
+void program_rom(unsigned long i, unsigned long j) {
   unsigned long time = 0;
   unsigned int data = 0;
   int subaddr = 0;
   int b;
-  addr = 0;
-  addr_max = rtui_get_addr_width(addr_width);
   rtui_clear();
   rtui_print("Programming ROM\x08");
   rtio_write_mode();
-  while (addr < addr_max) {
+  for (addr = i; addr <= j; addr++) {
     while (subaddr < 4) {
       if ((millis() - time) >= REF_DELAY) {
         time = millis();
@@ -613,7 +608,6 @@ void program_rom() {
     rtio_disable();
     data = 0;
     subaddr = 0;
-    addr++;
   }
   rtio_deactivate();
 }
@@ -621,7 +615,7 @@ void program_rom() {
 void program_rom_loop() {
   unsigned char buttons = rtui_get_buttons();
   if (buttons & RTUI_SELECT) {
-    program_rom();
+    program_rom(0, rtui_get_addr_width(addr_width) - 1);
     program_rom_setup();
     while (rtui_get_buttons());
     return;
@@ -1256,6 +1250,7 @@ void serial_command() {
         serial_dump_rom(st, st);
         break;
       }
+      serial_dump_rom(addr, addr | 0xF);
       break;
     case 'w':
       while (ser_buf[i] > 0 && ser_buf[i] < 33) i++;
@@ -1272,17 +1267,74 @@ void serial_command() {
       }
       break;
     case 'M':
-      addr_max = rtui_get_addr_width(addr_width);
-      Serial.println(addr_max, HEX);
+      Serial.println(rtui_get_addr_width(addr_width) - 1, HEX);
       break;
     case 'D':
-      dump_rom();
+      while (ser_buf[i] > 0 && ser_buf[i] < 33) i++;
+      d = digit(ser_buf[i]);
+      if (d >= 0 && d < 16) {
+        unsigned long st = d; i++;
+        d = digit(ser_buf[i]);
+        while (d >= 0 && d < 16) {
+          st = (st << 4) | d; i++;
+          d = digit(ser_buf[i]);
+        }
+        while (ser_buf[i] > 0 && ser_buf[i] < 33) i++;
+        d = digit(ser_buf[i]);
+        if (d >= 0 && d < 16) {
+          unsigned long en = d; i++;
+          d = digit(ser_buf[i]);
+          while (d >= 0 && d < 16) {
+            en = (en << 4) | d; i++;
+            d = digit(ser_buf[i]);
+          }
+          dump_rom(st, en);
+          pgm_setup();
+          Serial.println();
+          Serial.println("OK");
+          break;
+        }
+        dump_rom(st, rtui_get_addr_width(addr_width) - 1);
+        pgm_setup();
+        Serial.println();
+        Serial.println("OK");
+        break;
+      }
+      dump_rom(0, rtui_get_addr_width(addr_width) - 1);
       pgm_setup();
       Serial.println();
       Serial.println("OK");
       break;
     case 'P':
-      program_rom();
+      while (ser_buf[i] > 0 && ser_buf[i] < 33) i++;
+      d = digit(ser_buf[i]);
+      if (d >= 0 && d < 16) {
+        unsigned long st = d; i++;
+        d = digit(ser_buf[i]);
+        while (d >= 0 && d < 16) {
+          st = (st << 4) | d; i++;
+          d = digit(ser_buf[i]);
+        }
+        while (ser_buf[i] > 0 && ser_buf[i] < 33) i++;
+        d = digit(ser_buf[i]);
+        if (d >= 0 && d < 16) {
+          unsigned long en = d; i++;
+          d = digit(ser_buf[i]);
+          while (d >= 0 && d < 16) {
+            en = (en << 4) | d; i++;
+            d = digit(ser_buf[i]);
+          }
+          program_rom(st, en);
+          pgm_setup();
+          Serial.println("OK");
+          break;
+        }
+        program_rom(st, rtui_get_addr_width(addr_width) - 1);
+        pgm_setup();
+        Serial.println("OK");
+        break;
+      }
+      program_rom(0, rtui_get_addr_width(addr_width) - 1);
       pgm_setup();
       Serial.println("OK");
       break;
@@ -1293,7 +1345,9 @@ void serial_command() {
         eeprom_page = d;
         save_settings();
         Serial.println("OK");
+        break;
       }
+      Serial.println(eeprom_page_names[eeprom_page]);
       break;
     case 'r':
       while (ser_buf[i] > 0 && ser_buf[i] < 33) i++;
@@ -1305,7 +1359,9 @@ void serial_command() {
         } else {
           Serial.println("File Empty");
         }
+        break;
       }
+      Serial.println(eeprom_page_names[eeprom_page]);
       break;
     case 'A':
       while (ser_buf[i] > 0 && ser_buf[i] < 33) i++;
@@ -1447,7 +1503,10 @@ void serial_command() {
                 d = digit(ser_buf[i++]);
                 if (d < 0 || d >= 16) break;
                 origin = (origin << 4) | d;
-                serial_program_rom(origin, &ser_buf[i], (count - type) - 2);
+                serial_program_rom(
+                  (data_width ? (origin >> 1) : origin),
+                  &ser_buf[i], (count - type) - 2
+                );
                 break;
               default:
                 Serial.println("OK");
@@ -1485,7 +1544,12 @@ void serial_command() {
                       type |= d; i++;
                       switch (type) {
                         case 0:
-                          serial_program_rom(intel_hex_origin + offset, &ser_buf[i], count);
+                          serial_program_rom(
+                            (data_width
+                              ? ((intel_hex_origin + offset) >> 1)
+                              : (intel_hex_origin + offset)),
+                            &ser_buf[i], count
+                          );
                           break;
                         case 2:
                           count <<= 1; offset = 0;
@@ -1572,7 +1636,10 @@ void serial_command() {
                   }
                   switch (type) {
                     case 6:
-                      serial_program_rom(origin, &ser_buf[i], count >> 1);
+                      serial_program_rom(
+                        (data_width ? (origin >> 1) : origin),
+                        &ser_buf[i], count >> 1
+                      );
                       break;
                     default:
                       Serial.println("OK");
@@ -1592,14 +1659,14 @@ void serial_command() {
       Serial.println("d[<width>]          Report or set data width (8, 16 LE, 16 BE)");
       Serial.println("a[<width>]          Report or set address width (8, 8.5, ..., 31)");
       Serial.println("f[<format>]         Report or set I/O format for D and P (Raw, Hex)");
-      Serial.println("i<addr>[ <addr>]    Print hex dump of specified range of ROM");
+      Serial.println("i[<addr>[ <addr>]]  Print hex dump of specified range of ROM");
       Serial.println("w<addr>[ <data>]    Program ROM using plain address and hex data");
       Serial.println("S<rest-of-record>   Program ROM using Motorola SREC record");
       Serial.println(":<rest-of-record>   Program ROM using Intel HEX record");
       Serial.println("%<rest-of-record>   Program ROM using Tektronix extended HEX record");
-      Serial.println("M                   Report maximum address (exclusive) in hex");
-      Serial.println("D                   Start dumping entire ROM over serial");
-      Serial.println("P                   Start programming entire ROM over serial");
+      Serial.println("M                   Report maximum address (inclusive) in hex");
+      Serial.println("D[<addr>[ <addr>]]  Start dumping specified range or entire ROM over serial");
+      Serial.println("P[<addr>[ <addr>]]  Start programming specified range or entire ROM over serial");
       Serial.println("s<slot>             Save settings to Arduino EEPROM (0, 1, ..., F)");
       Serial.println("r<slot>             Load settings from Arduino EEPROM (0, 1, ..., F)");
       Serial.println("A<addr>             Set value on address bus (binary counter)");

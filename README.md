@@ -81,9 +81,9 @@ Make sure to specify `--rtscts`, `--echo`, and `--eol LF`:
     S<rest-of-record>   Program ROM using Motorola SREC record
     :<rest-of-record>   Program ROM using Intel HEX record
     %<rest-of-record>   Program ROM using Tektronix extended HEX record
-    M                   Report maximum address (exclusive) in hex
-    D                   Start dumping entire ROM over serial
-    P                   Start programming entire ROM over serial
+    M                   Report maximum address (inclusive) in hex
+    D[<addr>[ <addr>]]  Start dumping specified range or entire ROM over serial
+    P[<addr>[ <addr>]]  Start programming specified range or entire ROM over serial
     s<slot>             Save settings to Arduino EEPROM (0, 1, ..., F)
     r<slot>             Load settings from Arduino EEPROM (0, 1, ..., F)
     A<addr>             Set value on address bus (binary counter)
