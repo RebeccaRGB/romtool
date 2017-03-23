@@ -25,7 +25,7 @@ def help():
 
 def main():
 	port = None
-	baudrate = 9600
+	baudrate = 57600
 	bytesize = serial.EIGHTBITS
 	parity = serial.PARITY_NONE
 	stopbits = serial.STOPBITS_ONE

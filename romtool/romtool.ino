@@ -35,7 +35,7 @@ char * eeprom_page_names[16] = {
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(57600);
   rtio_init();
   rtui_init();
   pgm_setup();
