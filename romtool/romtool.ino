@@ -9,7 +9,7 @@
 #define NUM_PGM         14
 #define SER_BUF_SIZE  1024
 #define KEY_DELAY      500
-#define REF_DELAY      100
+#define REF_DELAY      200
 
 int cur_pgm = 0;
 char ser_buf[SER_BUF_SIZE];
@@ -35,7 +35,7 @@ char * eeprom_page_names[16] = {
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 void setup() {
-  Serial.begin(57600);
+  Serial.begin(250000);
   rtio_init();
   rtui_init();
   pgm_setup();

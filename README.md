@@ -64,10 +64,11 @@ output an error-corrected version to `4.bin`:
 
 If you wish to talk to the ROM Tool directly over its serial interface,
 you can do so using the miniterm utility that comes with pySerial.
-Make sure to specify `--rtscts`, `--echo`, and `--eol LF`:
+Make sure to specify `--rtscts`, `--echo`, `--eol LF`, and a baud rate
+of 250000:
 
-    $ python -m serial.tools.miniterm --rtscts --echo --eol LF /dev/tty.usbmodemfd121 57600
-    --- Miniterm on /dev/tty.usbmodemfd121  57600,8,N,1 ---
+    $ python -m serial.tools.miniterm --rtscts --echo --eol LF /dev/tty.usbmodemfd121 250000
+    --- Miniterm on /dev/tty.usbmodemfd121  250000,8,N,1 ---
     --- Quit: Ctrl+] | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H ---
     ?
     Beckie's ROM Tool Serial Interface

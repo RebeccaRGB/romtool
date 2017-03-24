@@ -25,13 +25,13 @@ def help():
 
 def main():
 	port = None
-	baudrate = 57600
+	baudrate = 250000
 	bytesize = serial.EIGHTBITS
 	parity = serial.PARITY_NONE
 	stopbits = serial.STOPBITS_ONE
 	timeout = None
 	xonxoff = False
-	rtscts = False
+	rtscts = True
 	dsrdtr = False
 	delay = None
 	i = 1
