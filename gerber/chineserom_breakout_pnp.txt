@@ -1,0 +1,64 @@
+*Pick And Place List
+*Company=
+*Author=
+*eMail=
+*
+*Project=chineserom_breakout
+*Date=21:26:15
+*CreatedBy=Fritzing 0.9.2b.11.19.8d2d5970658f0bed09c661c9ea9a515b5f40f44c
+*
+*
+*Coordinates in mm, always center of component
+*Origin 0/0=Lower left corner of PCB
+*Rotation in degree (0-360, math. pos.)
+*
+*No;Value;Package;X;Y;Rotation;Side;Name
+1;;;34.2628;-57.3528;0;Bottom;TXT3
+2;;;34.2801;-21.7686;0;Bottom;TXT3
+3;;;7.37345;-57.341;0;Bottom;TXT3
+4;;;7.39081;-11.6206;0;Bottom;TXT3
+5;;;7.39081;-34.4897;0;Bottom;TXT3
+6;;;7.39081;-44.6259;0;Bottom;TXT3
+7;;;7.39081;-16.7305;0;Bottom;TXT3
+8;;;7.39081;-3.99751;0;Bottom;TXT3
+9;;;34.2801;-37.0146;0;Bottom;TXT3
+10;;;34.2801;-42.1246;0;Bottom;TXT3
+11;;;20.8318;-4.14422;0;Bottom;TXT2
+12;;;34.2801;-14.1455;0;Bottom;TXT3
+13;;;34.2801;-9.11941;0;Bottom;TXT3
+14;;;7.39081;-29.3798;0;Bottom;TXT3
+15;;;7.39081;-14.1337;0;Bottom;TXT3
+16;;;34.2801;-34.5015;0;Bottom;TXT3
+17;;;34.2801;-39.6115;0;Bottom;TXT3
+18;;;34.2801;-19.2554;0;Bottom;TXT3
+19;;;20.8233;-10.011;0;Bottom;TXT1
+20;;;34.2801;-24.3653;0;Bottom;TXT3
+21;;ChineseROM;20.7052;-31.8196;0;Top;IC1
+22;;;34.2801;-4.00921;0;Bottom;TXT3
+23;;;7.39081;-37.0028;0;Bottom;TXT3
+24;;THT;20.8573;-57.4827;90;Bottom;J3
+25;;;20.8255;-6.47199;0;Bottom;TXT2
+26;;;7.39081;-54.762;0;Bottom;TXT3
+27;;;34.2801;-16.7422;0;Bottom;TXT3
+28;;;7.39081;-9.10747;0;Bottom;TXT3
+29;;;34.2801;-47.1508;0;Bottom;TXT3
+30;;;7.39081;-21.7567;0;Bottom;TXT3
+31;;;7.39081;-26.8667;0;Bottom;TXT3
+32;;;7.39081;-42.1128;0;Bottom;TXT3
+33;;;34.2801;-54.7738;0;Bottom;TXT3
+34;;;7.39081;-31.9766;0;Bottom;TXT3
+35;;THT;37.3829;-30.7827;0;Bottom;J2
+36;;;7.39081;-6.51061;0;Bottom;TXT3
+37;;;7.39081;-49.7358;0;Bottom;TXT3
+38;;;34.2801;-44.6377;0;Bottom;TXT3
+39;;;34.2801;-6.5224;0;Bottom;TXT3
+40;;;7.39081;-52.2489;0;Bottom;TXT3
+41;;;7.39081;-19.2436;0;Bottom;TXT3
+42;;;7.39081;-47.139;0;Bottom;TXT3
+43;;;7.39081;-24.3536;0;Bottom;TXT3
+44;;THT;4.33169;-30.8067;0;Bottom;J1
+45;;;34.2801;-52.2607;0;Bottom;TXT3
+46;;;7.39081;-39.5997;0;Bottom;TXT3
+47;;;34.2801;-49.7476;0;Bottom;TXT3
+48;;;34.2801;-11.6323;0;Bottom;TXT3
+49;;;34.2801;-31.9884;0;Bottom;TXT3
