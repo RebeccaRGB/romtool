@@ -13,6 +13,7 @@ def help():
 	print("   -u <path>     serial port connected to Beckie's ROM Tool", file=stderr)
 	print("   -d <width>    data width (8, 16le, 16be)", file=stderr)
 	print("   -a <width>    address width (8, 8.5, ..., 31)", file=stderr)
+	print("   -y <delay>    I/O delay in microseconds (0 - 10000)", file=stderr)
 	print("   -f <format>   I/O format (raw, hex)", file=stderr)
 	print("   -o <path>     path to write to", file=stderr)
 
@@ -21,6 +22,7 @@ def main():
 	datawidth = "8"
 	addrwidth = "16"
 	addrmax = 0x10000
+	iodelay = 0
 	ioformat = "raw"
 	output = None
 	i = 1
@@ -517,6 +519,15 @@ def main():
 				print(argv[i] + " is not valid for -a", file=stderr)
 				exit()
 			i += 1
+		elif arg == "-y" and i < len(argv):
+			try:
+				iodelay = int(argv[i])
+				if iodelay < 0 or iodelay > 10000:
+					raise ValueError
+			except ValueError:
+				print(argv[i] + " is not valid for -y", file=stderr)
+				exit()
+			i += 1
 		elif arg == "-f" and i < len(argv):
 			if argv[i] == "raw" or argv[i] == "Raw" or argv[i] == "RAW" or argv[i] == "bin" or argv[i] == "Bin" or argv[i] == "BIN":
 				ioformat = "raw"
@@ -557,6 +568,10 @@ def main():
 					if ser.readline().strip() != "OK":
 						print("No response from device (a)", file=stderr)
 						exit()
+					ser.write("y" + str(iodelay) + "\n")
+					if ser.readline().strip() != "OK":
+						print("No response from device (y)", file=stderr)
+						exit();
 					ser.write("f" + ioformat + "\n")
 					if ser.readline().strip() != "OK":
 						print("No response from device (f)", file=stderr)
@@ -589,6 +604,10 @@ def main():
 						if ser.readline().strip() != "OK":
 							print("No response from device (a)", file=stderr)
 							exit()
+						ser.write("y" + str(iodelay) + "\n")
+						if ser.readline().strip() != "OK":
+							print("No response from device (y)", file=stderr)
+							exit();
 						ser.write("f" + ioformat + "\n")
 						if ser.readline().strip() != "OK":
 							print("No response from device (f)", file=stderr)

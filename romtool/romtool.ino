@@ -6,7 +6,7 @@
 #include "rtio.h"
 #include "rtui.h"
 
-#define NUM_PGM         14
+#define NUM_PGM         15
 #define SER_BUF_SIZE  1024
 #define KEY_DELAY      500
 #define REF_DELAY      200
@@ -17,6 +17,7 @@ int ser_buf_pos = 0;
 
 int data_width = RTUI_DATA_WIDTH_8;
 int addr_width = RTUI_ADDR_WIDTH_16;
+int io_delay = 0;
 int hex_format = false;
 
 int active = false;
@@ -46,17 +47,18 @@ void pgm_setup() {
     case  0: hello_setup(); break;
     case  1: data_width_setup(); break;
     case  2: addr_width_setup(); break;
-    case  3: hex_format_setup(); break;
-    case  4: inspect_words_setup(); break;
-    case  5: inspect_rows_setup(); break;
-    case  6: dump_rom_setup(); break;
-    case  7: program_rom_setup(); break;
-    case  8: binary_counter_setup(); break;
-    case  9: logic_probe_setup(); break;
-    case 10: character_chart_setup(); break;
-    case 11: party_mode_setup(); break;
-    case 12: save_settings_setup(); break;
-    case 13: load_settings_setup(); break;
+    case  3: io_delay_setup(); break;
+    case  4: hex_format_setup(); break;
+    case  5: inspect_words_setup(); break;
+    case  6: inspect_rows_setup(); break;
+    case  7: dump_rom_setup(); break;
+    case  8: program_rom_setup(); break;
+    case  9: binary_counter_setup(); break;
+    case 10: logic_probe_setup(); break;
+    case 11: character_chart_setup(); break;
+    case 12: party_mode_setup(); break;
+    case 13: save_settings_setup(); break;
+    case 14: load_settings_setup(); break;
   }
 }
 
@@ -88,17 +90,18 @@ void loop() {
     case  0: hello_loop(); break;
     case  1: data_width_loop(); break;
     case  2: addr_width_loop(); break;
-    case  3: hex_format_loop(); break;
-    case  4: inspect_words_loop(); break;
-    case  5: inspect_rows_loop(); break;
-    case  6: dump_rom_loop(); break;
-    case  7: program_rom_loop(); break;
-    case  8: binary_counter_loop(); break;
-    case  9: logic_probe_loop(); break;
-    case 10: character_chart_loop(); break;
-    case 11: party_mode_loop(); break;
-    case 12: save_settings_loop(); break;
-    case 13: load_settings_loop(); break;
+    case  3: io_delay_loop(); break;
+    case  4: hex_format_loop(); break;
+    case  5: inspect_words_loop(); break;
+    case  6: inspect_rows_loop(); break;
+    case  7: dump_rom_loop(); break;
+    case  8: program_rom_loop(); break;
+    case  9: binary_counter_loop(); break;
+    case 10: logic_probe_loop(); break;
+    case 11: character_chart_loop(); break;
+    case 12: party_mode_loop(); break;
+    case 13: save_settings_loop(); break;
+    case 14: load_settings_loop(); break;
   }
 }
 
@@ -219,6 +222,73 @@ void addr_width_loop() {
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+void io_delay_print() {
+  char buf[9];
+  buf[0] = (io_delay >= 10000) ? (((io_delay / 10000) % 10) + '0') : ' ';
+  buf[1] = (io_delay >=  1000) ? (((io_delay /  1000) % 10) + '0') : ' ';
+  buf[2] = (io_delay >=   100) ? (((io_delay /   100) % 10) + '0') : ' ';
+  buf[3] = (io_delay >=    10) ? (((io_delay /    10) % 10) + '0') : ' ';
+  buf[4] = (io_delay >=     0) ? (((io_delay /     1) % 10) + '0') : ' ';
+  buf[5] = ' ';
+  buf[6] = 'u';
+  buf[7] = 's';
+  buf[8] = 0;
+  rtui_print(buf);
+}
+
+void io_delay_setup() {
+  rtui_clear();
+  rtui_print("I/O Delay");
+  rtui_set_cursor(0, 1);
+  rtui_print("\x06   ");
+  io_delay_print();
+  rtui_print("   \x07");
+}
+
+void io_delay_loop() {
+  unsigned char buttons = rtui_get_buttons();
+  if (buttons & RTUI_UP) {
+    io_delay += 5;
+    if (io_delay > 10000) io_delay = 10000;
+    rtui_set_cursor(4, 1);
+    io_delay_print();
+    delay(KEY_DELAY);
+    while (rtui_get_buttons()) {
+      io_delay += 5;
+      if (io_delay > 10000) io_delay = 10000;
+      rtui_set_cursor(4, 1);
+      io_delay_print();
+    }
+    return;
+  }
+  if (buttons & RTUI_DOWN) {
+    io_delay -= 5;
+    if (io_delay < 0) io_delay = 0;
+    rtui_set_cursor(4, 1);
+    io_delay_print();
+    delay(KEY_DELAY);
+    while (rtui_get_buttons()) {
+      io_delay -= 5;
+      if (io_delay < 0) io_delay = 0;
+      rtui_set_cursor(4, 1);
+      io_delay_print();
+    }
+    return;
+  }
+  if (buttons & RTUI_LEFT) {
+    pgm_prev();
+    while (rtui_get_buttons());
+    return;
+  }
+  if (buttons & RTUI_RIGHT) {
+    pgm_next();
+    while (rtui_get_buttons());
+    return;
+  }
+}
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 void hex_format_setup() {
   rtui_clear();
   rtui_print("I/O Format");
@@ -261,12 +331,14 @@ void inspect_words_setup() {
 void inspect_words() {
   rtio_set_addr(addr);
   rtio_enable();
+  if (io_delay) delayMicroseconds(io_delay);
   unsigned int data0 = rtio_read_data();
   rtio_disable();
   unsigned long addr1 = addr + 1;
   if (addr1 >= addr_max) addr1 = 0;
   rtio_set_addr(addr1);
   rtio_enable();
+  if (io_delay) delayMicroseconds(io_delay);
   unsigned int data1 = rtio_read_data();
   rtio_disable();
   rtui_hide_cursor();
@@ -374,6 +446,7 @@ void inspect_rows() {
     for (int i = 0; i < 4; i++) {
       rtio_set_addr(addr1);
       rtio_enable();
+      if (io_delay) delayMicroseconds(io_delay);
       data[i] = rtio_read_data();
       rtio_disable();
       addr1++;
@@ -386,6 +459,7 @@ void inspect_rows() {
     for (int i = 0; i < 8; i++) {
       rtio_set_addr(addr1);
       rtio_enable();
+      if (io_delay) delayMicroseconds(io_delay);
       data[i] = rtio_read_data();
       rtio_disable();
       addr1++;
@@ -493,6 +567,7 @@ void dump_rom(unsigned long i, unsigned long j) {
     }
     rtio_set_addr(addr);
     rtio_enable();
+    if (io_delay) delayMicroseconds(io_delay);
     data = rtio_read_data();
     rtio_disable();
     if (hex_format) {
@@ -605,6 +680,7 @@ void program_rom(unsigned long i, unsigned long j) {
     rtio_set_addr(addr);
     rtio_set_data(data);
     rtio_enable();
+    if (io_delay) delayMicroseconds(io_delay);
     rtio_disable();
     data = 0;
     subaddr = 0;
@@ -652,6 +728,8 @@ void save_settings() {
   EEPROM.write(ea++, addr_width);
   EEPROM.write(ea++, hex_format);
   EEPROM.write(ea++, rtui_get_backlight());
+  EEPROM.write(ea++, io_delay >> 8);
+  EEPROM.write(ea++, io_delay);
 }
 
 void save_settings_loop() {
@@ -714,6 +792,10 @@ int load_settings() {
       addr_width = EEPROM.read(ea++);
       hex_format = EEPROM.read(ea++);
       rtui_set_backlight(EEPROM.read(ea++));
+      io_delay = EEPROM.read(ea++);
+      io_delay <<= 8;
+      io_delay |= EEPROM.read(ea++);
+      if (io_delay < 0) io_delay = 0;
       return true;
     } else {
       return false;
@@ -1041,6 +1123,7 @@ void serial_dump_rom(unsigned long i, unsigned long j) {
     de = (addr & 0xF);
     rtio_set_addr(addr);
     rtio_enable();
+    if (io_delay) delayMicroseconds(io_delay);
     data[de] = rtio_read_data();
     rtio_disable();
     Serial.print(" ");
@@ -1102,6 +1185,7 @@ void serial_program_rom(unsigned long origin, char * buf, int count) {
     rtio_set_addr(addr);
     rtio_set_data(data);
     rtio_enable();
+    if (io_delay) delayMicroseconds(io_delay);
     rtio_disable();
     data = 0;
     subaddr = 0;
@@ -1210,6 +1294,24 @@ void serial_command() {
       } else {
         Serial.println((addr_width >> 1) + 8);
       }
+      break;
+    case 'y':
+      while (ser_buf[i] > 0 && ser_buf[i] < 33) i++;
+      d = digit(ser_buf[i]);
+      if (d >= 0 && d < 10) {
+        int p = d; i++;
+        d = digit(ser_buf[i]);
+        while (d >= 0 && d < 10) {
+          p = p * 10 + d; i++;
+          d = digit(ser_buf[i]);
+        }
+        if (p >= 0 && p <= 10000) {
+          io_delay = p;
+          Serial.println("OK");
+          break;
+        }
+      }
+      Serial.println(io_delay);
       break;
     case 'f':
       while (ser_buf[i] > 0 && ser_buf[i] < 33) i++;
@@ -1439,6 +1541,18 @@ void serial_command() {
       break;
     case 'm':
       while (ser_buf[i] > 0 && ser_buf[i] < 33) i++;
+      if (ser_buf[i] == '+') {
+        rtui_hide_cursor();
+        pgm_next();
+        Serial.println("OK");
+        break;
+      }
+      if (ser_buf[i] == '-') {
+        rtui_hide_cursor();
+        pgm_prev();
+        Serial.println("OK");
+        break;
+      }
       d = digit(ser_buf[i]);
       if (d >= 0 && d < 10) {
         int p = d; i++;
@@ -1456,7 +1570,7 @@ void serial_command() {
       Serial.println("OK");
       break;
     case 'v':
-      Serial.println("1");
+      Serial.println("2");
       break;
     case 'z':
       Serial.println(free_ram());
@@ -1658,6 +1772,7 @@ void serial_command() {
       Serial.println("b[<color>]          Report or set backlight color (0, 1, ..., 7)");
       Serial.println("d[<width>]          Report or set data width (8, 16 LE, 16 BE)");
       Serial.println("a[<width>]          Report or set address width (8, 8.5, ..., 31)");
+      Serial.println("y[<delay>]          Report or set I/O delay in microseconds (0 - 10000)");
       Serial.println("f[<format>]         Report or set I/O format for D and P (Raw, Hex)");
       Serial.println("i[<addr>[ <addr>]]  Print hex dump of specified range of ROM");
       Serial.println("w<addr>[ <data>]    Program ROM using plain address and hex data");
