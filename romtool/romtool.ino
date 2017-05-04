@@ -6,7 +6,7 @@
 #include "rtio.h"
 #include "rtui.h"
 
-#define NUM_PGM         15
+#define NUM_PGM         16
 #define SER_BUF_SIZE  1024
 #define KEY_DELAY      500
 #define REF_DELAY      200
@@ -55,10 +55,11 @@ void pgm_setup() {
     case  8: program_rom_setup(); break;
     case  9: binary_counter_setup(); break;
     case 10: logic_probe_setup(); break;
-    case 11: character_chart_setup(); break;
-    case 12: party_mode_setup(); break;
-    case 13: save_settings_setup(); break;
-    case 14: load_settings_setup(); break;
+    case 11: self_test_setup(); break;
+    case 12: character_chart_setup(); break;
+    case 13: party_mode_setup(); break;
+    case 14: save_settings_setup(); break;
+    case 15: load_settings_setup(); break;
   }
 }
 
@@ -98,10 +99,11 @@ void loop() {
     case  8: program_rom_loop(); break;
     case  9: binary_counter_loop(); break;
     case 10: logic_probe_loop(); break;
-    case 11: character_chart_loop(); break;
-    case 12: party_mode_loop(); break;
-    case 13: save_settings_loop(); break;
-    case 14: load_settings_loop(); break;
+    case 11: self_test_loop(); break;
+    case 12: character_chart_loop(); break;
+    case 13: party_mode_loop(); break;
+    case 14: save_settings_loop(); break;
+    case 15: load_settings_loop(); break;
   }
 }
 
@@ -941,6 +943,72 @@ void logic_probe_loop() {
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+void self_test_setup() {
+  rtui_clear();
+  rtui_print("Self Test");
+  rtui_set_cursor(0, 1);
+  rtui_print("  Press SELECT  ");
+}
+
+void self_test_loop() {
+  unsigned char buttons = rtui_get_buttons();
+  if (buttons & RTUI_SELECT) {
+    int i;
+    unsigned long am;
+    unsigned int dm;
+    unsigned int data;
+    char failures[17];
+    for (i = 0; i < 16; i++) failures[i] = '0';
+    failures[16] = 0;
+    randomSeed(millis());
+    rtui_clear();
+    rtui_print("Failures:");
+    rtui_set_cursor(0, 1);
+    rtui_print(failures);
+    while (rtui_get_buttons());
+    while (!(rtui_get_buttons() & RTUI_SELECT)) {
+      data = random(0, 0x100);
+      data <<= 8;
+      data |= random(0, 0x100);
+      addr = data;
+      for (am = 0x8000L, dm = 0x8000; dm; dm >>= 1, am <<= 1L) {
+        if (data & dm) addr |= am;
+      }
+      rtio_set_addr(addr);
+      data ^= rtio_read_data();
+      for (i = 15, dm = 0x8000; dm; dm >>= 1, i--) {
+        if (data & dm) {
+          switch (failures[i]) {
+            case '!': break;
+            case '9': failures[i] = 'A'; break;
+            case 'Z': failures[i] = '!'; break;
+            default: failures[i]++; break;
+          }
+        }
+      }
+      if (data) {
+        rtui_set_cursor(0, 1);
+        rtui_print(failures);
+      }
+    }
+    self_test_setup();
+    while (rtui_get_buttons());
+    return;
+  }
+  if (buttons & RTUI_LEFT) {
+    pgm_prev();
+    while (rtui_get_buttons());
+    return;
+  }
+  if (buttons & RTUI_RIGHT) {
+    pgm_next();
+    while (rtui_get_buttons());
+    return;
+  }
+}
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 void character_chart_setup() {
   rtui_clear();
   rtui_print("Character Chart");
@@ -1570,7 +1638,7 @@ void serial_command() {
       Serial.println("OK");
       break;
     case 'v':
-      Serial.println("2");
+      Serial.println("3");
       break;
     case 'z':
       Serial.println(free_ram());

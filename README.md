@@ -16,6 +16,7 @@ Firmware, shield, and level shifter for reading and programming ROMs using an Ar
   *  Change backlight color! Woo!
   *  Configurable data bus width (8 or 16, little- or big-endian)
   *  Configurable address bus width (8 to 31, in half-line increments)
+  *  Configurable delay between reads or writes (0 to 10000 microseconds)
   *  Raw binary or hexadecimal input and output over serial
   *  Inspect individual words of the ROM on the LCD
   *  Inspect 8 (in 8-bit mode) or 4 (in 16-bit mode) words at once on the LCD
@@ -23,6 +24,7 @@ Firmware, shield, and level shifter for reading and programming ROMs using an Ar
   *  Program ROM over serial
   *  Binary counter mode using address bus
   *  Logic probe mode using data bus
+  *  Self test mode (connect A0-A15 or A30-A15 to Q0-Q15, respectively, to test address and data lines)
   *  LCD character chart 'cause why not
   *  Party mode!
   *  Save and load settings using the Arduino's EEPROM
@@ -38,15 +40,16 @@ for details.)
 
 Dump a ROM to the file `rom.bin` with this command:
 
-    $ tools/rtdownload.py -u /dev/tty.usbmodemfa131 -d 8 -a 16 -f raw -o rom.bin
+    $ tools/rtdownload.py -u /dev/tty.usbmodemfa131 -d 8 -a 16 -y 0 -f raw -o rom.bin
 
 Program a ROM with the contents of the file `rom.bin` with this command:
 
-    $ tools/rtupload.py -u /dev/tty.usbmodemfa131 -d 8 -a 16 -f raw -i rom.bin
+    $ tools/rtupload.py -u /dev/tty.usbmodemfa131 -d 8 -a 16 -y 0 -f raw -i rom.bin
 
 Provide the path to the device with `-u`, the data width with `-d` (`8`, `16le`,
-or `16be`), the address width with `-a` (`8`, `8.5`, ..., `31`), the format with
-`-f` (`raw` or `hex`), the output file with `-o`, and the input file with `-i`.
+or `16be`), the address width with `-a` (`8`, `8.5`, ..., `31`), the delay
+between reads or writes with `-y` (`0` through `10000`), the format with `-f`
+(`raw` or `hex`), the output file with `-o`, and the input file with `-i`.
 
 If you are having difficulty dumping a ROM reliably, you can attempt several
 dumps and compare them using `erdrcr.py`. With enough dumps you may be able
@@ -76,6 +79,7 @@ of 250000:
     b[<color>]          Report or set backlight color (0, 1, ..., 7)
     d[<width>]          Report or set data width (8, 16 LE, 16 BE)
     a[<width>]          Report or set address width (8, 8.5, ..., 31)
+    y[<delay>]          Report or set I/O delay in microseconds (0 - 10000)
     f[<format>]         Report or set I/O format for D and P (Raw, Hex)
     i[<addr>[ <addr>]]  Print hex dump of specified range of ROM
     w<addr>[ <data>]    Program ROM using plain address and hex data
@@ -102,3 +106,8 @@ of 250000:
     00000610: 2072 2E31 2E36 2232 7520 6573 3A72 7322 6E75 6C70 7375 2022 6F62 7964 223A 5053  r 1.6.2" user:"sunplus" body:"SP
     00000620: 3247 3334 0022 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000  G243"...........................
     00000630: 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000  ................................
+
+Notice: The `i` and `w` commands use word offsets while the `S`, `:`, and `%`
+commands use byte offsets. If you are working with a 16-bit ROM, addresses
+passed to or returned by the `i` and `w` commands will be half the equivalent
+address passed to the `S`, `:`, and `%` commands.
