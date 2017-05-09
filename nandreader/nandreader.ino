@@ -121,6 +121,7 @@ void readDATANAND() {
       putDataBus(0x30);
       latchCommand();
       setDataBusIn();
+      delayMicroseconds(25);
       for (int i = 0; i < pagesize; i++) Serial.print(hex[readDataBus()]);
       Serial.println();
     }
