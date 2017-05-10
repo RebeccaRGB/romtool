@@ -8,6 +8,7 @@
 
 void readIDNAND();
 void readDATANAND();
+int free_ram();
 
 void printMenu() {
   Serial.println("Choose Option");
@@ -16,7 +17,7 @@ void printMenu() {
 }
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(250000);
   Serial.println("Welcome");
   initChip();
   printMenu();
@@ -31,11 +32,15 @@ void loop() {
     case '2':
       choice = 2;
       break;
+    case 'z':
+      choice = 1000;
+      break;
     case '\r':
     case '\n':
       switch (choice) {
         case 1: readIDNAND(); break;
         case 2: readDATANAND(); break;
+        case 1000: Serial.println(free_ram()); break;
       }
       printMenu();
       choice = 0;
@@ -100,6 +105,7 @@ void readDATANAND() {
   Serial.println("====================================");
   // This is set up for Toshiba TC58NVG0S3ETA00
   // Change these parameters to correspond to your chip
+  unsigned char buf[2112];  // Arduino has ~5K free; do not use buffer if page size is larger than that
   int pagesize = 2112;
   int pages = 64;
   int blocks = 1024;
@@ -122,10 +128,17 @@ void readDATANAND() {
       latchCommand();
       setDataBusIn();
       delayMicroseconds(25);
-      for (int i = 0; i < pagesize; i++) Serial.print(hex[readDataBus()]);
+      // for (int i = 0; i < pagesize; i++) Serial.print(hex[readDataBus()]);
+      for (int i = 0; i < pagesize; i++) buf[i] = readDataBus();
+      for (int i = 0; i < pagesize; i++) Serial.print(hex[buf[i]]);
       Serial.println();
     }
   }
   closeChip();
   Serial.println("====================================");
+}
+
+int free_ram() {
+  extern int __heap_start, * __brkval; int v;
+  return (int)&v - ((__brkval == 0) ? (int)&__heap_start : (int)__brkval);
 }

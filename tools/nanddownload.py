@@ -49,7 +49,7 @@ def main():
 	else:
 		try:
 			if output is None:
-				with serial.Serial(port=port, baudrate=115200, bytesize=serial.EIGHTBITS,
+				with serial.Serial(port=port, baudrate=250000, bytesize=serial.EIGHTBITS,
 								   parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE,
 								   xonxoff=False, rtscts=True, dsrdtr=False, timeout=10) as ser:
 					time.sleep(5)
@@ -61,7 +61,7 @@ def main():
 					exit()
 			else:
 				with open(output, "wb") as f:
-					with serial.Serial(port=port, baudrate=115200, bytesize=serial.EIGHTBITS,
+					with serial.Serial(port=port, baudrate=250000, bytesize=serial.EIGHTBITS,
 									   parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE,
 									   xonxoff=False, rtscts=True, dsrdtr=False, timeout=10) as ser:
 						time.sleep(5)
