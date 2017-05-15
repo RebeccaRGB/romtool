@@ -1,0 +1,238 @@
+#include <Arduino.h>
+#include "gpio.h"
+
+void setDir(int pin, int dir) {
+  switch (pin) {
+    case  0: if (dir) DDRE |= 0x01; else { PORTE &=~ 0x01; DDRE &=~ 0x01; } break;
+    case  1: if (dir) DDRE |= 0x02; else { PORTE &=~ 0x02; DDRE &=~ 0x02; } break;
+    case  2: if (dir) DDRE |= 0x10; else { PORTE &=~ 0x10; DDRE &=~ 0x10; } break;
+    case  3: if (dir) DDRE |= 0x20; else { PORTE &=~ 0x20; DDRE &=~ 0x20; } break;
+    case  4: if (dir) DDRG |= 0x20; else { PORTG &=~ 0x20; DDRG &=~ 0x20; } break;
+    case  5: if (dir) DDRE |= 0x08; else { PORTE &=~ 0x08; DDRE &=~ 0x08; } break;
+    case  6: if (dir) DDRH |= 0x08; else { PORTH &=~ 0x08; DDRH &=~ 0x08; } break;
+    case  7: if (dir) DDRH |= 0x10; else { PORTH &=~ 0x10; DDRH &=~ 0x10; } break;
+    case  8: if (dir) DDRH |= 0x20; else { PORTH &=~ 0x20; DDRH &=~ 0x20; } break;
+    case  9: if (dir) DDRH |= 0x40; else { PORTH &=~ 0x40; DDRH &=~ 0x40; } break;
+    case 10: if (dir) DDRB |= 0x10; else { PORTB &=~ 0x10; DDRB &=~ 0x10; } break;
+    case 11: if (dir) DDRB |= 0x20; else { PORTB &=~ 0x20; DDRB &=~ 0x20; } break;
+    case 12: if (dir) DDRB |= 0x40; else { PORTB &=~ 0x40; DDRB &=~ 0x40; } break;
+    case 13: if (dir) DDRB |= 0x80; else { PORTB &=~ 0x80; DDRB &=~ 0x80; } break;
+    case 14: if (dir) DDRJ |= 0x02; else { PORTJ &=~ 0x02; DDRJ &=~ 0x02; } break;
+    case 15: if (dir) DDRJ |= 0x01; else { PORTJ &=~ 0x01; DDRJ &=~ 0x01; } break;
+    case 16: if (dir) DDRH |= 0x02; else { PORTH &=~ 0x02; DDRH &=~ 0x02; } break;
+    case 17: if (dir) DDRH |= 0x01; else { PORTH &=~ 0x01; DDRH &=~ 0x01; } break;
+    case 18: if (dir) DDRD |= 0x08; else { PORTD &=~ 0x08; DDRD &=~ 0x08; } break;
+    case 19: if (dir) DDRD |= 0x04; else { PORTD &=~ 0x04; DDRD &=~ 0x04; } break;
+    case 20: if (dir) DDRD |= 0x02; else { PORTD &=~ 0x02; DDRD &=~ 0x02; } break;
+    case 21: if (dir) DDRD |= 0x01; else { PORTD &=~ 0x01; DDRD &=~ 0x01; } break;
+    case 22: if (dir) DDRA |= 0x01; else { PORTA &=~ 0x01; DDRA &=~ 0x01; } break;
+    case 23: if (dir) DDRA |= 0x02; else { PORTA &=~ 0x02; DDRA &=~ 0x02; } break;
+    case 24: if (dir) DDRA |= 0x04; else { PORTA &=~ 0x04; DDRA &=~ 0x04; } break;
+    case 25: if (dir) DDRA |= 0x08; else { PORTA &=~ 0x08; DDRA &=~ 0x08; } break;
+    case 26: if (dir) DDRA |= 0x10; else { PORTA &=~ 0x10; DDRA &=~ 0x10; } break;
+    case 27: if (dir) DDRA |= 0x20; else { PORTA &=~ 0x20; DDRA &=~ 0x20; } break;
+    case 28: if (dir) DDRA |= 0x40; else { PORTA &=~ 0x40; DDRA &=~ 0x40; } break;
+    case 29: if (dir) DDRA |= 0x80; else { PORTA &=~ 0x80; DDRA &=~ 0x80; } break;
+    case 30: if (dir) DDRC |= 0x80; else { PORTC &=~ 0x80; DDRC &=~ 0x80; } break;
+    case 31: if (dir) DDRC |= 0x40; else { PORTC &=~ 0x40; DDRC &=~ 0x40; } break;
+    case 32: if (dir) DDRC |= 0x20; else { PORTC &=~ 0x20; DDRC &=~ 0x20; } break;
+    case 33: if (dir) DDRC |= 0x10; else { PORTC &=~ 0x10; DDRC &=~ 0x10; } break;
+    case 34: if (dir) DDRC |= 0x08; else { PORTC &=~ 0x08; DDRC &=~ 0x08; } break;
+    case 35: if (dir) DDRC |= 0x04; else { PORTC &=~ 0x04; DDRC &=~ 0x04; } break;
+    case 36: if (dir) DDRC |= 0x02; else { PORTC &=~ 0x02; DDRC &=~ 0x02; } break;
+    case 37: if (dir) DDRC |= 0x01; else { PORTC &=~ 0x01; DDRC &=~ 0x01; } break;
+    case 38: if (dir) DDRD |= 0x80; else { PORTD &=~ 0x80; DDRD &=~ 0x80; } break;
+    case 39: if (dir) DDRG |= 0x04; else { PORTG &=~ 0x04; DDRG &=~ 0x04; } break;
+    case 40: if (dir) DDRG |= 0x02; else { PORTG &=~ 0x02; DDRG &=~ 0x02; } break;
+    case 41: if (dir) DDRG |= 0x01; else { PORTG &=~ 0x01; DDRG &=~ 0x01; } break;
+    case 42: if (dir) DDRL |= 0x80; else { PORTL &=~ 0x80; DDRL &=~ 0x80; } break;
+    case 43: if (dir) DDRL |= 0x40; else { PORTL &=~ 0x40; DDRL &=~ 0x40; } break;
+    case 44: if (dir) DDRL |= 0x20; else { PORTL &=~ 0x20; DDRL &=~ 0x20; } break;
+    case 45: if (dir) DDRL |= 0x10; else { PORTL &=~ 0x10; DDRL &=~ 0x10; } break;
+    case 46: if (dir) DDRL |= 0x08; else { PORTL &=~ 0x08; DDRL &=~ 0x08; } break;
+    case 47: if (dir) DDRL |= 0x04; else { PORTL &=~ 0x04; DDRL &=~ 0x04; } break;
+    case 48: if (dir) DDRL |= 0x02; else { PORTL &=~ 0x02; DDRL &=~ 0x02; } break;
+    case 49: if (dir) DDRL |= 0x01; else { PORTL &=~ 0x01; DDRL &=~ 0x01; } break;
+    case 50: if (dir) DDRB |= 0x08; else { PORTB &=~ 0x08; DDRB &=~ 0x08; } break;
+    case 51: if (dir) DDRB |= 0x04; else { PORTB &=~ 0x04; DDRB &=~ 0x04; } break;
+    case 52: if (dir) DDRB |= 0x02; else { PORTB &=~ 0x02; DDRB &=~ 0x02; } break;
+    case 53: if (dir) DDRB |= 0x01; else { PORTB &=~ 0x01; DDRB &=~ 0x01; } break;
+  }
+}
+
+void setPin(int pin, int val) {
+  switch (pin) {
+    case  0: if (DDRE & 0x01) { if (val) PORTE |= 0x01; else PORTE &=~ 0x01; } break;
+    case  1: if (DDRE & 0x02) { if (val) PORTE |= 0x02; else PORTE &=~ 0x02; } break;
+    case  2: if (DDRE & 0x10) { if (val) PORTE |= 0x10; else PORTE &=~ 0x10; } break;
+    case  3: if (DDRE & 0x20) { if (val) PORTE |= 0x20; else PORTE &=~ 0x20; } break;
+    case  4: if (DDRG & 0x20) { if (val) PORTG |= 0x20; else PORTG &=~ 0x20; } break;
+    case  5: if (DDRE & 0x08) { if (val) PORTE |= 0x08; else PORTE &=~ 0x08; } break;
+    case  6: if (DDRH & 0x08) { if (val) PORTH |= 0x08; else PORTH &=~ 0x08; } break;
+    case  7: if (DDRH & 0x10) { if (val) PORTH |= 0x10; else PORTH &=~ 0x10; } break;
+    case  8: if (DDRH & 0x20) { if (val) PORTH |= 0x20; else PORTH &=~ 0x20; } break;
+    case  9: if (DDRH & 0x40) { if (val) PORTH |= 0x40; else PORTH &=~ 0x40; } break;
+    case 10: if (DDRB & 0x10) { if (val) PORTB |= 0x10; else PORTB &=~ 0x10; } break;
+    case 11: if (DDRB & 0x20) { if (val) PORTB |= 0x20; else PORTB &=~ 0x20; } break;
+    case 12: if (DDRB & 0x40) { if (val) PORTB |= 0x40; else PORTB &=~ 0x40; } break;
+    case 13: if (DDRB & 0x80) { if (val) PORTB |= 0x80; else PORTB &=~ 0x80; } break;
+    case 14: if (DDRJ & 0x02) { if (val) PORTJ |= 0x02; else PORTJ &=~ 0x02; } break;
+    case 15: if (DDRJ & 0x01) { if (val) PORTJ |= 0x01; else PORTJ &=~ 0x01; } break;
+    case 16: if (DDRH & 0x02) { if (val) PORTH |= 0x02; else PORTH &=~ 0x02; } break;
+    case 17: if (DDRH & 0x01) { if (val) PORTH |= 0x01; else PORTH &=~ 0x01; } break;
+    case 18: if (DDRD & 0x08) { if (val) PORTD |= 0x08; else PORTD &=~ 0x08; } break;
+    case 19: if (DDRD & 0x04) { if (val) PORTD |= 0x04; else PORTD &=~ 0x04; } break;
+    case 20: if (DDRD & 0x02) { if (val) PORTD |= 0x02; else PORTD &=~ 0x02; } break;
+    case 21: if (DDRD & 0x01) { if (val) PORTD |= 0x01; else PORTD &=~ 0x01; } break;
+    case 22: if (DDRA & 0x01) { if (val) PORTA |= 0x01; else PORTA &=~ 0x01; } break;
+    case 23: if (DDRA & 0x02) { if (val) PORTA |= 0x02; else PORTA &=~ 0x02; } break;
+    case 24: if (DDRA & 0x04) { if (val) PORTA |= 0x04; else PORTA &=~ 0x04; } break;
+    case 25: if (DDRA & 0x08) { if (val) PORTA |= 0x08; else PORTA &=~ 0x08; } break;
+    case 26: if (DDRA & 0x10) { if (val) PORTA |= 0x10; else PORTA &=~ 0x10; } break;
+    case 27: if (DDRA & 0x20) { if (val) PORTA |= 0x20; else PORTA &=~ 0x20; } break;
+    case 28: if (DDRA & 0x40) { if (val) PORTA |= 0x40; else PORTA &=~ 0x40; } break;
+    case 29: if (DDRA & 0x80) { if (val) PORTA |= 0x80; else PORTA &=~ 0x80; } break;
+    case 30: if (DDRC & 0x80) { if (val) PORTC |= 0x80; else PORTC &=~ 0x80; } break;
+    case 31: if (DDRC & 0x40) { if (val) PORTC |= 0x40; else PORTC &=~ 0x40; } break;
+    case 32: if (DDRC & 0x20) { if (val) PORTC |= 0x20; else PORTC &=~ 0x20; } break;
+    case 33: if (DDRC & 0x10) { if (val) PORTC |= 0x10; else PORTC &=~ 0x10; } break;
+    case 34: if (DDRC & 0x08) { if (val) PORTC |= 0x08; else PORTC &=~ 0x08; } break;
+    case 35: if (DDRC & 0x04) { if (val) PORTC |= 0x04; else PORTC &=~ 0x04; } break;
+    case 36: if (DDRC & 0x02) { if (val) PORTC |= 0x02; else PORTC &=~ 0x02; } break;
+    case 37: if (DDRC & 0x01) { if (val) PORTC |= 0x01; else PORTC &=~ 0x01; } break;
+    case 38: if (DDRD & 0x80) { if (val) PORTD |= 0x80; else PORTD &=~ 0x80; } break;
+    case 39: if (DDRG & 0x04) { if (val) PORTG |= 0x04; else PORTG &=~ 0x04; } break;
+    case 40: if (DDRG & 0x02) { if (val) PORTG |= 0x02; else PORTG &=~ 0x02; } break;
+    case 41: if (DDRG & 0x01) { if (val) PORTG |= 0x01; else PORTG &=~ 0x01; } break;
+    case 42: if (DDRL & 0x80) { if (val) PORTL |= 0x80; else PORTL &=~ 0x80; } break;
+    case 43: if (DDRL & 0x40) { if (val) PORTL |= 0x40; else PORTL &=~ 0x40; } break;
+    case 44: if (DDRL & 0x20) { if (val) PORTL |= 0x20; else PORTL &=~ 0x20; } break;
+    case 45: if (DDRL & 0x10) { if (val) PORTL |= 0x10; else PORTL &=~ 0x10; } break;
+    case 46: if (DDRL & 0x08) { if (val) PORTL |= 0x08; else PORTL &=~ 0x08; } break;
+    case 47: if (DDRL & 0x04) { if (val) PORTL |= 0x04; else PORTL &=~ 0x04; } break;
+    case 48: if (DDRL & 0x02) { if (val) PORTL |= 0x02; else PORTL &=~ 0x02; } break;
+    case 49: if (DDRL & 0x01) { if (val) PORTL |= 0x01; else PORTL &=~ 0x01; } break;
+    case 50: if (DDRB & 0x08) { if (val) PORTB |= 0x08; else PORTB &=~ 0x08; } break;
+    case 51: if (DDRB & 0x04) { if (val) PORTB |= 0x04; else PORTB &=~ 0x04; } break;
+    case 52: if (DDRB & 0x02) { if (val) PORTB |= 0x02; else PORTB &=~ 0x02; } break;
+    case 53: if (DDRB & 0x01) { if (val) PORTB |= 0x01; else PORTB &=~ 0x01; } break;
+  }
+}
+
+void togglePin(int pin) {
+  switch (pin) {
+    case  0: if (DDRE & 0x01) { if (PORTE & 0x01) PORTE &=~ 0x01; else PORTE |= 0x01; } break;
+    case  1: if (DDRE & 0x02) { if (PORTE & 0x02) PORTE &=~ 0x02; else PORTE |= 0x02; } break;
+    case  2: if (DDRE & 0x10) { if (PORTE & 0x10) PORTE &=~ 0x10; else PORTE |= 0x10; } break;
+    case  3: if (DDRE & 0x20) { if (PORTE & 0x20) PORTE &=~ 0x20; else PORTE |= 0x20; } break;
+    case  4: if (DDRG & 0x20) { if (PORTG & 0x20) PORTG &=~ 0x20; else PORTG |= 0x20; } break;
+    case  5: if (DDRE & 0x08) { if (PORTE & 0x08) PORTE &=~ 0x08; else PORTE |= 0x08; } break;
+    case  6: if (DDRH & 0x08) { if (PORTH & 0x08) PORTH &=~ 0x08; else PORTH |= 0x08; } break;
+    case  7: if (DDRH & 0x10) { if (PORTH & 0x10) PORTH &=~ 0x10; else PORTH |= 0x10; } break;
+    case  8: if (DDRH & 0x20) { if (PORTH & 0x20) PORTH &=~ 0x20; else PORTH |= 0x20; } break;
+    case  9: if (DDRH & 0x40) { if (PORTH & 0x40) PORTH &=~ 0x40; else PORTH |= 0x40; } break;
+    case 10: if (DDRB & 0x10) { if (PORTB & 0x10) PORTB &=~ 0x10; else PORTB |= 0x10; } break;
+    case 11: if (DDRB & 0x20) { if (PORTB & 0x20) PORTB &=~ 0x20; else PORTB |= 0x20; } break;
+    case 12: if (DDRB & 0x40) { if (PORTB & 0x40) PORTB &=~ 0x40; else PORTB |= 0x40; } break;
+    case 13: if (DDRB & 0x80) { if (PORTB & 0x80) PORTB &=~ 0x80; else PORTB |= 0x80; } break;
+    case 14: if (DDRJ & 0x02) { if (PORTJ & 0x02) PORTJ &=~ 0x02; else PORTJ |= 0x02; } break;
+    case 15: if (DDRJ & 0x01) { if (PORTJ & 0x01) PORTJ &=~ 0x01; else PORTJ |= 0x01; } break;
+    case 16: if (DDRH & 0x02) { if (PORTH & 0x02) PORTH &=~ 0x02; else PORTH |= 0x02; } break;
+    case 17: if (DDRH & 0x01) { if (PORTH & 0x01) PORTH &=~ 0x01; else PORTH |= 0x01; } break;
+    case 18: if (DDRD & 0x08) { if (PORTD & 0x08) PORTD &=~ 0x08; else PORTD |= 0x08; } break;
+    case 19: if (DDRD & 0x04) { if (PORTD & 0x04) PORTD &=~ 0x04; else PORTD |= 0x04; } break;
+    case 20: if (DDRD & 0x02) { if (PORTD & 0x02) PORTD &=~ 0x02; else PORTD |= 0x02; } break;
+    case 21: if (DDRD & 0x01) { if (PORTD & 0x01) PORTD &=~ 0x01; else PORTD |= 0x01; } break;
+    case 22: if (DDRA & 0x01) { if (PORTA & 0x01) PORTA &=~ 0x01; else PORTA |= 0x01; } break;
+    case 23: if (DDRA & 0x02) { if (PORTA & 0x02) PORTA &=~ 0x02; else PORTA |= 0x02; } break;
+    case 24: if (DDRA & 0x04) { if (PORTA & 0x04) PORTA &=~ 0x04; else PORTA |= 0x04; } break;
+    case 25: if (DDRA & 0x08) { if (PORTA & 0x08) PORTA &=~ 0x08; else PORTA |= 0x08; } break;
+    case 26: if (DDRA & 0x10) { if (PORTA & 0x10) PORTA &=~ 0x10; else PORTA |= 0x10; } break;
+    case 27: if (DDRA & 0x20) { if (PORTA & 0x20) PORTA &=~ 0x20; else PORTA |= 0x20; } break;
+    case 28: if (DDRA & 0x40) { if (PORTA & 0x40) PORTA &=~ 0x40; else PORTA |= 0x40; } break;
+    case 29: if (DDRA & 0x80) { if (PORTA & 0x80) PORTA &=~ 0x80; else PORTA |= 0x80; } break;
+    case 30: if (DDRC & 0x80) { if (PORTC & 0x80) PORTC &=~ 0x80; else PORTC |= 0x80; } break;
+    case 31: if (DDRC & 0x40) { if (PORTC & 0x40) PORTC &=~ 0x40; else PORTC |= 0x40; } break;
+    case 32: if (DDRC & 0x20) { if (PORTC & 0x20) PORTC &=~ 0x20; else PORTC |= 0x20; } break;
+    case 33: if (DDRC & 0x10) { if (PORTC & 0x10) PORTC &=~ 0x10; else PORTC |= 0x10; } break;
+    case 34: if (DDRC & 0x08) { if (PORTC & 0x08) PORTC &=~ 0x08; else PORTC |= 0x08; } break;
+    case 35: if (DDRC & 0x04) { if (PORTC & 0x04) PORTC &=~ 0x04; else PORTC |= 0x04; } break;
+    case 36: if (DDRC & 0x02) { if (PORTC & 0x02) PORTC &=~ 0x02; else PORTC |= 0x02; } break;
+    case 37: if (DDRC & 0x01) { if (PORTC & 0x01) PORTC &=~ 0x01; else PORTC |= 0x01; } break;
+    case 38: if (DDRD & 0x80) { if (PORTD & 0x80) PORTD &=~ 0x80; else PORTD |= 0x80; } break;
+    case 39: if (DDRG & 0x04) { if (PORTG & 0x04) PORTG &=~ 0x04; else PORTG |= 0x04; } break;
+    case 40: if (DDRG & 0x02) { if (PORTG & 0x02) PORTG &=~ 0x02; else PORTG |= 0x02; } break;
+    case 41: if (DDRG & 0x01) { if (PORTG & 0x01) PORTG &=~ 0x01; else PORTG |= 0x01; } break;
+    case 42: if (DDRL & 0x80) { if (PORTL & 0x80) PORTL &=~ 0x80; else PORTL |= 0x80; } break;
+    case 43: if (DDRL & 0x40) { if (PORTL & 0x40) PORTL &=~ 0x40; else PORTL |= 0x40; } break;
+    case 44: if (DDRL & 0x20) { if (PORTL & 0x20) PORTL &=~ 0x20; else PORTL |= 0x20; } break;
+    case 45: if (DDRL & 0x10) { if (PORTL & 0x10) PORTL &=~ 0x10; else PORTL |= 0x10; } break;
+    case 46: if (DDRL & 0x08) { if (PORTL & 0x08) PORTL &=~ 0x08; else PORTL |= 0x08; } break;
+    case 47: if (DDRL & 0x04) { if (PORTL & 0x04) PORTL &=~ 0x04; else PORTL |= 0x04; } break;
+    case 48: if (DDRL & 0x02) { if (PORTL & 0x02) PORTL &=~ 0x02; else PORTL |= 0x02; } break;
+    case 49: if (DDRL & 0x01) { if (PORTL & 0x01) PORTL &=~ 0x01; else PORTL |= 0x01; } break;
+    case 50: if (DDRB & 0x08) { if (PORTB & 0x08) PORTB &=~ 0x08; else PORTB |= 0x08; } break;
+    case 51: if (DDRB & 0x04) { if (PORTB & 0x04) PORTB &=~ 0x04; else PORTB |= 0x04; } break;
+    case 52: if (DDRB & 0x02) { if (PORTB & 0x02) PORTB &=~ 0x02; else PORTB |= 0x02; } break;
+    case 53: if (DDRB & 0x01) { if (PORTB & 0x01) PORTB &=~ 0x01; else PORTB |= 0x01; } break;
+  }
+}
+
+int getPin(int pin) {
+  switch (pin) {
+    case  0: return (DDRE & 0x01) ? (PORTE & 0x01) : (PINE & 0x01); break;
+    case  1: return (DDRE & 0x02) ? (PORTE & 0x02) : (PINE & 0x02); break;
+    case  2: return (DDRE & 0x10) ? (PORTE & 0x10) : (PINE & 0x10); break;
+    case  3: return (DDRE & 0x20) ? (PORTE & 0x20) : (PINE & 0x20); break;
+    case  4: return (DDRG & 0x20) ? (PORTG & 0x20) : (PING & 0x20); break;
+    case  5: return (DDRE & 0x08) ? (PORTE & 0x08) : (PINE & 0x08); break;
+    case  6: return (DDRH & 0x08) ? (PORTH & 0x08) : (PINH & 0x08); break;
+    case  7: return (DDRH & 0x10) ? (PORTH & 0x10) : (PINH & 0x10); break;
+    case  8: return (DDRH & 0x20) ? (PORTH & 0x20) : (PINH & 0x20); break;
+    case  9: return (DDRH & 0x40) ? (PORTH & 0x40) : (PINH & 0x40); break;
+    case 10: return (DDRB & 0x10) ? (PORTB & 0x10) : (PINB & 0x10); break;
+    case 11: return (DDRB & 0x20) ? (PORTB & 0x20) : (PINB & 0x20); break;
+    case 12: return (DDRB & 0x40) ? (PORTB & 0x40) : (PINB & 0x40); break;
+    case 13: return (DDRB & 0x80) ? (PORTB & 0x80) : (PINB & 0x80); break;
+    case 14: return (DDRJ & 0x02) ? (PORTJ & 0x02) : (PINJ & 0x02); break;
+    case 15: return (DDRJ & 0x01) ? (PORTJ & 0x01) : (PINJ & 0x01); break;
+    case 16: return (DDRH & 0x02) ? (PORTH & 0x02) : (PINH & 0x02); break;
+    case 17: return (DDRH & 0x01) ? (PORTH & 0x01) : (PINH & 0x01); break;
+    case 18: return (DDRD & 0x08) ? (PORTD & 0x08) : (PIND & 0x08); break;
+    case 19: return (DDRD & 0x04) ? (PORTD & 0x04) : (PIND & 0x04); break;
+    case 20: return (DDRD & 0x02) ? (PORTD & 0x02) : (PIND & 0x02); break;
+    case 21: return (DDRD & 0x01) ? (PORTD & 0x01) : (PIND & 0x01); break;
+    case 22: return (DDRA & 0x01) ? (PORTA & 0x01) : (PINA & 0x01); break;
+    case 23: return (DDRA & 0x02) ? (PORTA & 0x02) : (PINA & 0x02); break;
+    case 24: return (DDRA & 0x04) ? (PORTA & 0x04) : (PINA & 0x04); break;
+    case 25: return (DDRA & 0x08) ? (PORTA & 0x08) : (PINA & 0x08); break;
+    case 26: return (DDRA & 0x10) ? (PORTA & 0x10) : (PINA & 0x10); break;
+    case 27: return (DDRA & 0x20) ? (PORTA & 0x20) : (PINA & 0x20); break;
+    case 28: return (DDRA & 0x40) ? (PORTA & 0x40) : (PINA & 0x40); break;
+    case 29: return (DDRA & 0x80) ? (PORTA & 0x80) : (PINA & 0x80); break;
+    case 30: return (DDRC & 0x80) ? (PORTC & 0x80) : (PINC & 0x80); break;
+    case 31: return (DDRC & 0x40) ? (PORTC & 0x40) : (PINC & 0x40); break;
+    case 32: return (DDRC & 0x20) ? (PORTC & 0x20) : (PINC & 0x20); break;
+    case 33: return (DDRC & 0x10) ? (PORTC & 0x10) : (PINC & 0x10); break;
+    case 34: return (DDRC & 0x08) ? (PORTC & 0x08) : (PINC & 0x08); break;
+    case 35: return (DDRC & 0x04) ? (PORTC & 0x04) : (PINC & 0x04); break;
+    case 36: return (DDRC & 0x02) ? (PORTC & 0x02) : (PINC & 0x02); break;
+    case 37: return (DDRC & 0x01) ? (PORTC & 0x01) : (PINC & 0x01); break;
+    case 38: return (DDRD & 0x80) ? (PORTD & 0x80) : (PIND & 0x80); break;
+    case 39: return (DDRG & 0x04) ? (PORTG & 0x04) : (PING & 0x04); break;
+    case 40: return (DDRG & 0x02) ? (PORTG & 0x02) : (PING & 0x02); break;
+    case 41: return (DDRG & 0x01) ? (PORTG & 0x01) : (PING & 0x01); break;
+    case 42: return (DDRL & 0x80) ? (PORTL & 0x80) : (PINL & 0x80); break;
+    case 43: return (DDRL & 0x40) ? (PORTL & 0x40) : (PINL & 0x40); break;
+    case 44: return (DDRL & 0x20) ? (PORTL & 0x20) : (PINL & 0x20); break;
+    case 45: return (DDRL & 0x10) ? (PORTL & 0x10) : (PINL & 0x10); break;
+    case 46: return (DDRL & 0x08) ? (PORTL & 0x08) : (PINL & 0x08); break;
+    case 47: return (DDRL & 0x04) ? (PORTL & 0x04) : (PINL & 0x04); break;
+    case 48: return (DDRL & 0x02) ? (PORTL & 0x02) : (PINL & 0x02); break;
+    case 49: return (DDRL & 0x01) ? (PORTL & 0x01) : (PINL & 0x01); break;
+    case 50: return (DDRB & 0x08) ? (PORTB & 0x08) : (PINB & 0x08); break;
+    case 51: return (DDRB & 0x04) ? (PORTB & 0x04) : (PINB & 0x04); break;
+    case 52: return (DDRB & 0x02) ? (PORTB & 0x02) : (PINB & 0x02); break;
+    case 53: return (DDRB & 0x01) ? (PORTB & 0x01) : (PINB & 0x01); break;
+  }
+}
