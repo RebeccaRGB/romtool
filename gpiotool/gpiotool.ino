@@ -5,7 +5,7 @@ int a = 13;
 int s =  0;
 
 void setup() {
-  Serial.begin(250000);
+  Serial.begin(115200);
 }
 
 void loop() {
