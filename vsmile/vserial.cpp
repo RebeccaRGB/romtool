@@ -1,6 +1,10 @@
 #include <Arduino.h>
 #include "vserial.h"
 
+static unsigned char vs_buffer[256];
+static unsigned char vs_buf_start = 0;
+static unsigned char vs_buf_end = 0;
+
 // controller pin 1 = RST - controller reset, active low output
 // controller pin 2 = RTR - controller select, active high output
 // controller pin 3 = RX  - system TX, controller RX, active low output
@@ -14,11 +18,9 @@ void vserial_begin() {
   VS_TX_DDR  &=~ VS_TX_MASK ; VS_TX_PORT  |=  VS_TX_MASK ;
   VS_RST_DDR |=  VS_RST_MASK; VS_RST_PORT |=  VS_RST_MASK;
   VS_GND_DDR |=  VS_GND_MASK; VS_GND_PORT &=~ VS_GND_MASK;
+  vs_buf_start = 0;
+  vs_buf_end = 0;
 }
-
-static unsigned char vs_buffer[256];
-static unsigned char vs_buf_start = 0;
-static unsigned char vs_buf_end = 0;
 
 // controller -> system:
 //        ~10us ->||<-       ->|-|<- ~208us (4800bps)
@@ -117,4 +119,6 @@ void vserial_reset() {
   VS_TX_PORT  |=  VS_TX_MASK ;
   VS_RST_PORT |=  VS_RST_MASK;
   VS_GND_PORT &=~ VS_GND_MASK;
+  vs_buf_start = 0;
+  vs_buf_end = 0;
 }

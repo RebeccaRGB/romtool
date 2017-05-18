@@ -78,7 +78,7 @@ void loop() {
       case 0xA1: Serial.write(" enter"); break;
       case 0xA2: Serial.write(" exit"); break;
       case 0xA3: Serial.write(" help"); break;
-      case 0xA4: Serial.write(" learning-center"); break;
+      case 0xA4: Serial.write(" learning-zone"); break;
       case 0xC0: Serial.write(" h-center"); break;
       case 0xC3: Serial.write(" right-1"); break;
       case 0xC4: Serial.write(" right-2"); break;
@@ -128,10 +128,13 @@ void loop() {
 
   // Every so often the system sends a Bx message to the controller,
   // and the controller responds with a different Bx message.
+  // The Bx message the controller responds with is a function of the
+  // last two Bx messages it received: the last two messages are added
+  // modulo 16 and used as an index into the following array:
+  // BA B5 B4 B7 B6 B1 B0 B3 B2 BD BC BF BE B9 B8 BB
   // If the controller goes ~90 seconds without receiving a Bx message,
   // it goes to sleep: the 55 heartbeat continues but no other messages
   // are sent until it receives another Bx message.
-  // I don't know why this is nor what the pattern to the messages is.
   if ((millis() - lastSync) > 60000) {
     delay(8);
     vserial_write(0xB1);
@@ -145,6 +148,8 @@ void loop() {
     delay(8);
     vserial_reset();
     delay(8);
+    lastSync = millis();
+    h = -1;
     return;
   }
   else if (a == '$' || a == 'X' || a == 'x') { h = -1; return; }
