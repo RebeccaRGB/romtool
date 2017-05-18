@@ -132,6 +132,8 @@ void loop() {
   // last two Bx messages it received: the last two messages are added
   // modulo 16 and used as an index into the following array:
   // BA B5 B4 B7 B6 B1 B0 B3 B2 BD BC BF BE B9 B8 BB
+  // Equivalently, if a and b are the last two Bx messages and c is
+  // the response, c = (((a + b + 0x0F) & 0x0F) ^ 0xB5).
   // If the controller goes ~90 seconds without receiving a Bx message,
   // it goes to sleep: the 55 heartbeat continues but no other messages
   // are sent until it receives another Bx message.
