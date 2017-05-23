@@ -51,14 +51,15 @@ or `16be`), the address width with `-a` (`8`, `8.5`, ..., `31`), the delay
 between reads or writes with `-y` (`0` through `10000`), the format with `-f`
 (`raw` or `hex`), the output file with `-o`, and the input file with `-i`.
 
-If you are having difficulty dumping a ROM reliably, you can attempt several
-dumps and compare them using `erdrcr.py`. With enough dumps you may be able
-to construct an error-corrected version.
+If you are having difficulty dumping a ROM reliably, you can attempt
+several dumps and compare them using the `erdrcr` tool from
+[goodiebin](https://github.com/RebeccaRGB/goodiebin). With enough
+dumps you may be able to construct an error-corrected version.
 
 This command will compare three dumps, `1.bin`, `2.bin`, and `3.bin`, and
 output an error-corrected version to `4.bin`:
 
-    $ tools/erdrcr.py 1.bin 2.bin 3.bin -o 4.bin
+    $ erdrcr 1.bin 2.bin 3.bin -o 4.bin
     Address.Mask	0's	1's	Correction
     00000015.02:	2	1	0
     0000001C.08:	1	2	1
