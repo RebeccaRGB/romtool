@@ -4,6 +4,8 @@ Firmware, shield, and level shifter for reading and programming ROMs using an Ar
 ## Hardware Required
   *  [Arduino Mega](https://www.adafruit.com/product/191)
   *  [RGB LCD Shield](https://www.adafruit.com/products/716) from Adafruit
+  *  [Beckie's ROM Tool Arduino Mega Shield](http://aisler.net/p/IFIOIAWG)
+  *  [Beckie's ROM Tool Level Shifter](http://aisler.net/p/IFIOIAWG)
   *  3x Texas Instruments SN74LVCH16T245 for level shifter board
   *  1x Texas Instruments SN74LVC2T45 for level shifter board
   *  A whole bunch of headers for shield and level shifter board
