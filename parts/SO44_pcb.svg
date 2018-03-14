@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" x="0in" y="0in" width="0.720472in" height="1.09035in" viewBox="0 0 18.3 27.695">
+<g id="silkscreen">
+<rect x="3.15" y="0.065" width="12" height="27.565" fill="none" stroke="#FFFFFF" stroke-width="0.127"/>
+<circle cx="4.15" cy="1.13" r="0.5" fill="none" stroke="#FFFFFF" stroke-width="0.127"/>
+</g>
+<g id="copper1">
+<rect id="connector0pad" x="0" y="0.1625" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector1pad" x="0" y="1.4325" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector2pad" x="0" y="2.7025" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector3pad" x="0" y="3.9725" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector4pad" x="0" y="5.2425" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector5pad" x="0" y="6.5125" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector6pad" x="0" y="7.7825" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector7pad" x="0" y="9.0525" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector8pad" x="0" y="10.3225" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector9pad" x="0" y="11.5925" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector10pad" x="0" y="12.8625" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector11pad" x="0" y="14.1325" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector12pad" x="0" y="15.4025" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector13pad" x="0" y="16.6725" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector14pad" x="0" y="17.9425" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector15pad" x="0" y="19.2125" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector16pad" x="0" y="20.4825" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector17pad" x="0" y="21.7525" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector18pad" x="0" y="23.0225" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector19pad" x="0" y="24.2925" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector20pad" x="0" y="25.5625" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector21pad" x="0" y="26.8325" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector22pad" x="15.3" y="26.8325" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector23pad" x="15.3" y="25.5625" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector24pad" x="15.3" y="24.2925" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector25pad" x="15.3" y="23.0225" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector26pad" x="15.3" y="21.7525" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector27pad" x="15.3" y="20.4825" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector28pad" x="15.3" y="19.2125" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector29pad" x="15.3" y="17.9425" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector30pad" x="15.3" y="16.6725" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector31pad" x="15.3" y="15.4025" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector32pad" x="15.3" y="14.1325" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector33pad" x="15.3" y="12.8625" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector34pad" x="15.3" y="11.5925" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector35pad" x="15.3" y="10.3225" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector36pad" x="15.3" y="9.0525" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector37pad" x="15.3" y="7.7825" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector38pad" x="15.3" y="6.5125" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector39pad" x="15.3" y="5.2425" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector40pad" x="15.3" y="3.9725" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector41pad" x="15.3" y="2.7025" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector42pad" x="15.3" y="1.4325" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+<rect id="connector43pad" x="15.3" y="0.1625" width="3" height="0.7" fill="#F7BD13" stroke="none" stroke-width="0"/>
+</g>
+</svg>
